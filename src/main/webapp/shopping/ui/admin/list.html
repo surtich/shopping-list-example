@@ -1,0 +1,26 @@
+ <div class="container" style="padding:15px 0">
+    <div class="row control-group">
+        <div class="span8">
+            <span class="label" data-id="actual">Actual</span>
+            <span class="badge badge-info" data-id="progress_numeric">?/?</span>
+            <span data-id="last_updated"></span>
+
+        </div>
+        <div class="span4">
+            <div class=" pull-right">
+                <button type="button" class="btn btn-success" data-id="btn_create"><i class="icon-folder-open icon-white"></i>@@ACTIONS.CREATE_NEW@@</button>
+                <button type="button" class="btn btn-info" data-id="btn_save"><i class="icon-repeat icon-white"></i>@@ACTIONS.SAVE@@</button>
+                <button type="button" class="btn btn-warning" data-id="btn_load"><i class="icon-download icon-white"></i>@@ACTIONS.LOAD@@</button>
+                <button type="button" class="btn btn-danger" data-id="btn_remove"><i class="icon-trash icon-white"></i>@@ACTIONS.REMOVE@@</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span12">
+            <div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
+                <div data-id="progress_slider" class="ui-slider-range ui-widget-header ui-slider-range-min" style="width: 0%; background: #729FCF"></div>
+                <a data-id="progress_link" class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 0%;"></a>
+            </div>
+        </div>
+    </div>
+</div>
