@@ -3,4 +3,4 @@ shopping-list-example
 
 Shopping List Example
 
-Example of [Iris.js](https://github.com/iris-js/iris) use.
+Exercise1: Categories and Products in the same Screen
