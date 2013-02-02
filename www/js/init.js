@@ -72,8 +72,7 @@ $(document).ready(
             screen: {
                 welcome: {js: "/shopping/screen/welcome.js", html: "/shopping/screen/welcome.html"},
                 home: {js: "/shopping/screen/home.js", html: "/shopping/screen/home.html"},
-                categories: {js: "/shopping/screen/products/categories.js", html: "/shopping/screen/products/categories.html"},
-                products: {js: "/shopping/screen/products/products.js", html: "/shopping/screen/products/products.html"},
+                categories: {js: "/shopping/screen/products/categories.js", html: "/shopping/screen/products/categories.html"},                
                 shopping: {js: "/shopping/screen/list/shopping.js", html: "/shopping/screen/list/shopping.html"}
             },
             ui: {

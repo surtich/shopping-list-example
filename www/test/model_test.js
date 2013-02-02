@@ -41,10 +41,6 @@
                     js: "/shopping/screen/products/categories.js", 
                     html: "/shopping/screen/products/categories.html"
                 },
-                products: {
-                    js: "/shopping/screen/products/products.js", 
-                    html: "/shopping/screen/products/products.html"
-                },
                 shopping: {
                     js: "/shopping/screen/list/shopping.js", 
                     html: "/shopping/screen/list/shopping.html"
@@ -89,7 +85,7 @@
         }
     });
     
-        asyncTest("Test addShoppingProduct() method", function() {
+    asyncTest("Test addShoppingProduct() method", function() {
         window.expect(1);
         
         iris.on(iris.AFTER_NAVIGATION, function() {

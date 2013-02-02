@@ -15,7 +15,6 @@ iris.screen(
             self.screens("screens", [
                 ["home", iris.path.screen.home.js],
                 ["categories", iris.path.screen.categories.js],
-                ["products", iris.path.screen.products.js],
                 ["shopping", iris.path.screen.shopping.js]
                 ]);
         }

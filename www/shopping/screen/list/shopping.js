@@ -34,10 +34,9 @@ iris.screen(
             }
         });
             
-        self.create = function () {
-            
+        self.create = function () {            
             self.tmpl(iris.path.screen.shopping.html);
-            self.get("div_shopping").hide();            
+            self.get("div_shopping").hide();
             _asignEvents();
         };
                 
@@ -45,6 +44,7 @@ iris.screen(
             model.init(false, function(){
                 _inflate(); 
             });
+            
         };
         
         function _asignEvents() {

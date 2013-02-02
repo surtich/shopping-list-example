@@ -27,7 +27,7 @@ module.exports = function(grunt) {
             files: ['www/test/**/*.html']
         },
         lint: {
-            files: ['grunt.js', ' www/js/iris.js', 'www/js/init.js', 'www/js/shopping_list.js', 'www/shopping/**/*.js', 'www/test/modet_test.js']
+            files: ['grunt.js', ' www/js/iris.js', 'www/js/init.js', 'www/js/shopping_list.js', 'www/shopping/**/*.js', 'www/test/model_test.js', 'www/test/view_test.js']
         },
         watch: {
             files: '<config:lint.files>',

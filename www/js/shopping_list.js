@@ -60,7 +60,7 @@ var model = {};
             iris.on(model.event.SHOPPING.UNCHECK_ALL, model.shoppingList.uncheckAll);        
             iris.on(model.event.SHOPPING.INVERT_CHECK, model.shoppingList.invertCheck);
             iris.on(model.event.SHOPPING.REMOVE_CHECKED, model.shoppingList.removePurchased);
-            
+
             model.resource.app.getCategories(function(categories){
                 model.categories = categories;
                 model.resource.app.getAllProducts(function(products){
