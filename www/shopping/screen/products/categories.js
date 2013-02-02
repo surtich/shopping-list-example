@@ -1,23 +1,10 @@
 iris.screen(
-    function (self) {
-        
-        function _inflate(categories, products) {
-            $.each(categories,
-                function(index, category) {						
-                    self.ui("list_categories", iris.path.ui.category_list_item.js, {
-                        "category": category,
-                        "products": products
-                    });
-                }
-                );
-        }
-        
-        self.create = function () {
-            self.tmpl(iris.path.screen.categories.html);
-            model.init(false, function(){
-                _inflate(model.categories, model.products); 
-            });
-        };
-        
-        
-    }, iris.path.screen.categories.js);
+function (self) {
+    self.create = function () {
+        self.tmpl("/shopping/screen/products/categories.html");
+        model.init(false, function() {
+            self.ui("list_products", "/shopping/ui/products/products.js");            
+            ko.applyBindings(model, self.get("list_categories").get(0));
+        });
+    };  
+}, "/shopping/screen/products/categories.js");

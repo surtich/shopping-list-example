@@ -76,9 +76,8 @@ $(document).ready(
                 shopping: {js: "/shopping/screen/list/shopping.js", html: "/shopping/screen/list/shopping.html"}
             },
             ui: {
-                category_list_item: {js: "/shopping/ui/products/category_list_item.js", html: "/shopping/ui/products/category_list_item.html"},
-                product_list_item: {js: "/shopping/ui/products/product_list_item.js", html: "/shopping/ui/products/product_list_item.html"},
-                product_shopping_list_item: {js: "/shopping/ui/list/product_shopping_list_item.js", html: "/shopping/ui/list/product_shopping_list_item.html"}
+                products: {js: "/shopping/ui/products/products.js", html: "/shopping/ui/products/products.html"},
+                product_shopping_list: {js: "/shopping/ui/list/product_shopping_list.js", html: "/shopping/ui/list/product_shopping_list.html"}
             },
             resource: {
               js: "/shopping/resource.js"  

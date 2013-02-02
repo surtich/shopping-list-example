@@ -22,7 +22,7 @@
       raises(block, [expected], [message])
   */
  
-     function init() {
+    function init() {
         iris.baseUri("..");
         iris.cache(false);
         iris.enableLog("localhost");
@@ -40,24 +40,20 @@
                 categories: {
                     js: "/shopping/screen/products/categories.js", 
                     html: "/shopping/screen/products/categories.html"
-                },
+                },                
                 shopping: {
                     js: "/shopping/screen/list/shopping.js", 
                     html: "/shopping/screen/list/shopping.html"
                 }
             },
             ui: {
-                category_list_item: {
-                    js: "/shopping/ui/products/category_list_item.js", 
-                    html: "/shopping/ui/products/category_list_item.html"
+                products: {
+                    js: "/shopping/ui/products/products.js", 
+                    html: "/shopping/ui/products/products.html"
                 },
-                product_list_item: {
-                    js: "/shopping/ui/products/product_list_item.js", 
-                    html: "/shopping/ui/products/product_list_item.html"
-                },
-                product_shopping_list_item: {
-                    js: "/shopping/ui/list/product_shopping_list_item.js", 
-                    html: "/shopping/ui/list/product_shopping_list_item.html"
+                product_shopping_list: {
+                    js: "/shopping/ui/list/product_shopping_list.js", 
+                    html: "/shopping/ui/list/product_shopping_list.html"
                 }
             },
             resource: {
@@ -97,7 +93,7 @@
                 iris.on(iris.AFTER_NAVIGATION ,function() {
                     setTimeout(function() {
                         $("input[type='checkbox']", "[id^='collapse_category']").trigger('click');
-                        window.ok(model.shoppingList.getShoppingProducts().length === model.products.length, "All products are selected");
+                        window.ok(model.shoppingList.getShoppingProducts().length === model.products().length, "All products are selected");
                         window.start();
                     },1000);
                 
@@ -108,6 +104,7 @@
     });
         
     asyncTest("Test remove purchased products", function() {
+        var products = [];
         window.expect(1);
         iris.on(iris.AFTER_NAVIGATION ,function() {
             iris.off(iris.AFTER_NAVIGATION);
@@ -119,11 +116,11 @@
                         $("input[type='checkbox']", "[id^='collapse_category']").trigger('click');
                         iris.navigate("#/shopping");
                         iris.on(iris.AFTER_NAVIGATION ,function() {
-                            iris.off(iris.AFTER_NAVIGATION);
+                            iris.off(iris.AFTER_NAVIGATION);                            
                             $("button[data-id='buy']").first().trigger("click");
-                            //$("button[data-id='btn_remove_checked']").trigger("click");
-                            model.ShoppingList.prototype.removePurchased();
-                            window.ok(model.shoppingList.getShoppingProducts().length === model.products.length - 1, "Removed 1 purchased product");
+                            $("button[data-id='btn_remove_checked']").trigger("click");
+                            //model.ShoppingList.prototype.removePurchased();
+                            window.ok(model.shoppingList.getShoppingProducts().length === model.products().length - 1, "Removed 1 purchased product");
                             window.start();
                         });
                     },1000);

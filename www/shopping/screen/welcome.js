@@ -13,9 +13,9 @@ iris.screen(
             
         function _createScreens() {
             self.screens("screens", [
-                ["home", iris.path.screen.home.js],
-                ["categories", iris.path.screen.categories.js],
-                ["shopping", iris.path.screen.shopping.js]
+                ["home", "/shopping/screen/home.js"],
+                ["categories", "/shopping/screen/products/categories.js"],
+                ["shopping", "/shopping/screen/list/shopping.js"]
                 ]);
         }
         
@@ -64,7 +64,7 @@ iris.screen(
         
         self.create = function () {
             
-            self.tmpl(iris.path.screen.welcome.html);
+            self.tmpl("/shopping/screen/welcome.html");
             
             _ajaxPrepare();
             
@@ -82,4 +82,6 @@ iris.screen(
                 iris.navigate("#/home"); //Default page
             }
         };
-    } , iris.path.screen.welcome.js);
+        
+        
+    } , "/shopping/screen/welcome.js");

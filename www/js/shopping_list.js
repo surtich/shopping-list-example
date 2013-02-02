@@ -1,27 +1,25 @@
-var model = {}; 
-
-(function($) {
+var Model = function() {
     
-    model.initialized = false; 
-    model.categories = {};
-    model.products = {};
-    model.event = {
+    var self = this;
+    
+    this.initialized = false;
+    
+    this.setCategories = function (categories) {
+        this.categories = ko.observableArray(categories);
+    };
+    
+    this.setProducts = function (products) {
+        this.products = ko.observableArray(products);
+    };
+    
+    this.event = {
         
         PRODUCTS: {
-            ADD: "shopping:products:add",
-            REMOVE: "shopping:products:remove",
-            REMOVED: "shopping:products:removed"
+            REMOVE: "shopping:products:remove"
         },
         
         SHOPPING: {
-            CHECK: "shopping:products:check",
-            UNCHECK: "shopping:products:uncheck",
-            CHANGE_STATE: "shopping:products:change_state",
-            REMOVE_ALL: "shopping:products:remove_all",
-            CHECK_ALL: "shopping:products:check_all",
-            UNCHECK_ALL: "shopping:products:uncheck_all",
-            INVERT_CHECK: "shopping:products:invert_check",
-            REMOVE_CHECKED: "shopping:products:remove_checked"
+            CHANGE_STATE: "shopping:products:change_state"
         }
     };
     
@@ -31,7 +29,7 @@ var model = {};
             next = force;
             force = false;
         }
-        if (force || !model.initialized) {
+        if (force || !self.initialized) {
             model.shoppingList = new model.ShoppingList();
 
             model.resource = iris.resource(iris.path.resource.js);
@@ -52,20 +50,15 @@ var model = {};
             })();
 
 
-            iris.on(model.event.PRODUCTS.REMOVE, model.shoppingList.removeShoppingProduct);
-            iris.on(model.event.PRODUCTS.ADD, model.shoppingList.addShoppingProduct);
-            iris.on(model.event.SHOPPING.CHANGE_STATE, model.shoppingList.changeStateShoppingProduct);        
-            iris.on(model.event.SHOPPING.REMOVE_ALL, model.shoppingList.removeAll);
-            iris.on(model.event.SHOPPING.CHECK_ALL, model.shoppingList.checkAll);
-            iris.on(model.event.SHOPPING.UNCHECK_ALL, model.shoppingList.uncheckAll);        
-            iris.on(model.event.SHOPPING.INVERT_CHECK, model.shoppingList.invertCheck);
-            iris.on(model.event.SHOPPING.REMOVE_CHECKED, model.shoppingList.removePurchased);
+            iris.on(this.event.PRODUCTS.REMOVE, this.shoppingList.removeShoppingProduct);
+            iris.on(this.event.PRODUCTS.ADD, this.shoppingList.addShoppingProduct);
+            iris.on(this.event.SHOPPING.CHANGE_STATE, this.shoppingList.changeStateShoppingProduct);
 
             model.resource.app.getCategories(function(categories){
-                model.categories = categories;
+                model.setCategories(categories);
                 model.resource.app.getAllProducts(function(products){
-                    model.products = products;
-                    model.initialized = true;
+                    model.setProducts(products);
+                    self.initialized = true;
                     if (next) {
                         next();
                     }
@@ -80,26 +73,26 @@ var model = {};
     }
     
     function _destroy () {
-        model.initialized = false;
+        self.initialized = false;
         iris.off(this.event.PRODUCTS.REMOVE, this.shoppingList.removeShoppingProduct);
         iris.off(this.event.PRODUCTS.ADD, this.shoppingList.addShoppingProduct);
         iris.off(this.event.SHOPPING.CHANGE_STATE, this.shoppingList.changeStateShoppingProduct);
         this.shoppingList = null;
-        model.categories = {};
-        model.products = {};
+        model.setCategories(null);
+        model.setProducts(null);
     }
     
-    model.init = _init;
-    model.destroy = _destroy;
+    this.init = _init;
+    this.destroy = _destroy;
     
     
-    model.ShoppingList =  function () {    
+    this.ShoppingList =  function () {    
        
-        var _shoppingProducts = [];
+        var _shoppingProducts = ko.observableArray([]);
         var _order = 1;
     
         function _getShoppingProducts () {
-            return _shoppingProducts;
+            return _shoppingProducts();
         }
         
         function _getSortedShoppingProducts() {        
@@ -107,9 +100,9 @@ var model = {};
             var index = 0;
             var posPurchased = 0;
             
-            for (; index < _shoppingProducts.length; index++) {
-                var product = _shoppingProducts[index];                
-                var purchased = product.purchased === true;
+            for (; index < _shoppingProducts().length; index++) {
+                var product = _shoppingProducts()[index];                
+                var purchased = product.purchased() === true;
                 var i = 0;
                 var j = posPurchased;
                 if (purchased) {
@@ -144,15 +137,15 @@ var model = {};
             if (i === -1) {
                 return null;
             } else {
-                return _shoppingProducts[i];
+                return _shoppingProducts()[i];
             }
         }
         
         function _getShoppingProductIndex(idProduct) {
             var found = false;
             var i = 0;
-            while ( !found && i < _shoppingProducts.length ) {
-                if (_shoppingProducts[i].idProduct === idProduct) {
+            while ( !found && i < _shoppingProducts().length ) {
+                if (_shoppingProducts()[i].idProduct === idProduct) {
                     found = true;
                 } else {
                     i++;
@@ -173,11 +166,10 @@ var model = {};
                         _order = product.order;
                     }
                 }
-                var shoppingProduct = new model.ShoppingProduct(product);
+                var shoppingProduct = new self.ShoppingProduct(product);
                 shoppingProduct.order = _order;                
                 _order++;
                 _shoppingProducts.push(shoppingProduct);
-                
             } else {
                 throw "The product is already in the shopping list.";
             }
@@ -191,17 +183,26 @@ var model = {};
             }
         }
         
+        function _addOrRemoveShoppingProduct (product, isAddAction) {
+            if (isAddAction) {
+                _addShoppingProduct(product);
+            } else {
+                _removeShoppingProduct(product.idProduct);
+            }
+            return true;
+        }
+        
         function _removeAll () {
             _order = 1;
-            _shoppingProducts = [];
+            _shoppingProducts.splice(0,_shoppingProducts().length);
         }
         
         
-        function _changeStateShoppingProduct(idProduct, purchased) {            
+        function _changeStateShoppingProduct(idProduct, purchased) {
             var shoppingProduct = _getShoppingProduct(idProduct);
             if (shoppingProduct !== null) {
                 if (purchased === undefined) {
-                    shoppingProduct.changeState(!shoppingProduct.purchased);
+                    shoppingProduct.changeState(!shoppingProduct.purchased());
                 } else {               
                     shoppingProduct.changeState(purchased === true);
                 }
@@ -209,22 +210,22 @@ var model = {};
         }
         
         function _changeStateAllShoppingProducts(purchased) {                    
-            for (var i = 0; i < _shoppingProducts.length; i++) {
-                var product = _shoppingProducts[i];             
+            for (var i = 0; i < _shoppingProducts().length; i++) {
+                var product = _shoppingProducts()[i];             
                 
                 if (purchased === true || purchased === false) {                   
-                    product.purchased = purchased;
+                    product.purchased (purchased);
                 } else {
-                    product.purchased = !product.purchased;
+                    product.purchased (!product.purchased());
                 }
             }
         }
         
         function _removePurchased() {            
             var i = 0;
-            while (i < _shoppingProducts.length) {
-                var product = _shoppingProducts[i];                
-                if (product.hasOwnProperty("purchased") && product.purchased === true) {
+            while (i < _shoppingProducts().length) {
+                var product = _shoppingProducts()[i];                
+                if (product.hasOwnProperty("purchased") && product.purchased() === true) {
                     _shoppingProducts.splice(i, 1);
                 } else {
                     i++;
@@ -235,8 +236,8 @@ var model = {};
         function _hasProducts(purchased) {
             var found = false;
             var i = 0;
-            while ( !found && i < _shoppingProducts.length ) {
-                if (_shoppingProducts[i].purchased === purchased) {
+            while ( !found && i < _shoppingProducts().length ) {
+                if (_shoppingProducts()[i].purchased() === purchased) {
                     found = true;
                 } else {
                     i++;
@@ -248,41 +249,43 @@ var model = {};
         
         function _countProducts(purchased) {
             var number = 0;
-            for (var i = 0; i < _shoppingProducts.length; i++) {
-                if (_shoppingProducts[i].purchased === purchased) {
+            for (var i = 0; i < _shoppingProducts().length; i++) {
+                if (_shoppingProducts()[i].purchased() === purchased) {
                     number++;
                 }
             }
             return number;
         }
-             
-        model.ShoppingList.prototype.getShoppingProducts = _getShoppingProducts;
-        model.ShoppingList.prototype.getSortedShoppingProducts = _getSortedShoppingProducts;
-        model.ShoppingList.prototype.getShoppingProduct = _getShoppingProduct;
-        model.ShoppingList.prototype.addShoppingProduct = _addShoppingProduct;
-        model.ShoppingList.prototype.removeShoppingProduct = _removeShoppingProduct;
-        model.ShoppingList.prototype.changeStateShoppingProduct = _changeStateShoppingProduct;
-        model.ShoppingList.prototype.removeAll = _removeAll;
-        model.ShoppingList.prototype.checkAll = function() {
+        
+        self.ShoppingList.prototype.getShoppingProduct = _getShoppingProduct;
+        self.ShoppingList.prototype.getShoppingProducts = _getShoppingProducts;
+        self.ShoppingList.prototype.getSortedShoppingProducts = _getSortedShoppingProducts;
+        self.ShoppingList.prototype.getShoppingProduct = _getShoppingProduct;
+        self.ShoppingList.prototype.addShoppingProduct = _addShoppingProduct;
+        self.ShoppingList.prototype.removeShoppingProduct = _removeShoppingProduct;
+        self.ShoppingList.prototype.addOrRemoveShoppingProduct = _addOrRemoveShoppingProduct;
+        self.ShoppingList.prototype.changeStateShoppingProduct = _changeStateShoppingProduct;
+        self.ShoppingList.prototype.removeAll = _removeAll;
+        self.ShoppingList.prototype.checkAll = function() {
             _changeStateAllShoppingProducts(true);
         };
-        model.ShoppingList.prototype.uncheckAll = function() {
+        self.ShoppingList.prototype.uncheckAll = function() {
             _changeStateAllShoppingProducts(false);
         };
-        model.ShoppingList.prototype.invertCheck = function() {
+        self.ShoppingList.prototype.invertCheck = function() {
             _changeStateAllShoppingProducts();
         };
-        model.ShoppingList.prototype.removePurchased = _removePurchased;
+        self.ShoppingList.prototype.removePurchased = _removePurchased;
         
-        model.ShoppingList.prototype.hasPurchasedProducts = function() {
+        self.ShoppingList.prototype.hasPurchasedProducts = function() {
             return _hasProducts(true);
         };
         
-        model.ShoppingList.prototype.hasNoPurchasedProducts = function() {            
+        self.ShoppingList.prototype.hasNoPurchasedProducts = function() {            
             return _hasProducts(false);
         };
         
-        model.ShoppingList.prototype.countPurchased = function() {            
+        self.ShoppingList.prototype.countPurchased = function() {            
             return _countProducts(true);
         };
         
@@ -290,17 +293,19 @@ var model = {};
     
     
     
-    model.ShoppingProduct = function (product) {
+    this.ShoppingProduct = function (product) {
     
         this.order = -1;
         this.idProduct = product.idProduct;
         this.nameProduct = product.nameProduct;
-        this.purchased = product.purchased === true;
+        this.purchased = ko.observable(product.purchased === true);
         
         this.changeState = function(purchased) {
-            this.purchased = purchased === true;
+            this.purchased (purchased === true);
         };
         
     };
-    
-})(jQuery);
+};
+
+var model = new Model();
+        

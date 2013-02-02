@@ -40,24 +40,20 @@
                 categories: {
                     js: "/shopping/screen/products/categories.js", 
                     html: "/shopping/screen/products/categories.html"
-                },
+                },                
                 shopping: {
                     js: "/shopping/screen/list/shopping.js", 
                     html: "/shopping/screen/list/shopping.html"
                 }
             },
             ui: {
-                category_list_item: {
-                    js: "/shopping/ui/products/category_list_item.js", 
-                    html: "/shopping/ui/products/category_list_item.html"
+                products: {
+                    js: "/shopping/ui/products/products.js", 
+                    html: "/shopping/ui/products/products.html"
                 },
-                product_list_item: {
-                    js: "/shopping/ui/products/product_list_item.js", 
-                    html: "/shopping/ui/products/product_list_item.html"
-                },
-                product_shopping_list_item: {
-                    js: "/shopping/ui/list/product_shopping_list_item.js", 
-                    html: "/shopping/ui/list/product_shopping_list_item.html"
+                product_shopping_list: {
+                    js: "/shopping/ui/list/product_shopping_list.js", 
+                    html: "/shopping/ui/list/product_shopping_list.html"
                 }
             },
             resource: {
@@ -76,7 +72,7 @@
     module( "Model Test", {
         setup: function() {
             iris.notify("iris-reset");
-            init();
+            init();            
             iris.welcome(iris.path.screen.welcome.js);
         },
         teardown: function () {
@@ -178,11 +174,11 @@
         
                 model.shoppingList.changeStateShoppingProduct(15);
         
-                window.ok(model.shoppingList.getShoppingProduct(15).purchased === true, "Bacon has been purchased");
+                window.ok(model.shoppingList.getShoppingProduct(15).purchased() === true, "Bacon has been purchased");
         
                 model.shoppingList.changeStateShoppingProduct(15);
         
-                window.ok(model.shoppingList.getShoppingProduct(15).purchased === false, "Bacon has not been purchased");
+                window.ok(model.shoppingList.getShoppingProduct(15).purchased() === false, "Bacon has not been purchased");
                 window.start();
             });
         });

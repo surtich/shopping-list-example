@@ -16,7 +16,7 @@ iris.screen(
         });
             
         self.create = function () {    
-            self.tmpl(iris.path.screen.home.html);
+            self.tmpl("/shopping/screen/home.html");
         };
         
-    }, iris.path.screen.home.js);
+    }, "/shopping/screen/home.js");

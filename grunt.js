@@ -51,7 +51,8 @@ module.exports = function(grunt) {
                 jQuery: true,
                 iris: true,
                 $: true,
-                model: true
+                model: true,
+                ko: true
             }
         },
         uglify: {},
