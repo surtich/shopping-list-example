@@ -11,5 +11,4 @@ module.exports = function(app){
     };
 
     app.get('/category', list);
-    app.get('/list/kk', list);
 }

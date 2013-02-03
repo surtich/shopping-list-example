@@ -1,13 +1,16 @@
  {
- 	"name": "shopping-list-example-node",
- 	"version": "0.0.1",
- 	"scripts": {
+ 	"name": "shopping-list-example-node"
+ 	, "version": "0.0.1"
+ 	, "scripts": {
  		"start": "node app"
- 		},
- 		"dependencies": {
- 			"express": "*",
- 			"mongoose":"*",
-    "mongodb":"*",
-    "async":"*"
+ 		}
+ 		, "dependencies": {
+ 		"express": "*"
+ 		,	"mongoose":"*"
+   , "mongodb":"*"
+   , "async":"*"
+   , "passport-google-oauth":"*"
+   , "passport":"*"
+   , "util":"*"
  		}
  	}	

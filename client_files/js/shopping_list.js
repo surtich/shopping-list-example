@@ -67,7 +67,7 @@ var model = {};
                         model.resource.load("/product", success, error);
                     },
                     getLists: function(success, error) {
-                        model.resource.load("/list/", success, error);
+                        model.resource.load("/list/kk", success, error);
                     },
             
                     getList: function(success, error, idList) {

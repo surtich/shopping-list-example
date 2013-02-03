@@ -52,11 +52,11 @@ iris.screen(
             
                 model.resource.app.isConected(
                     function (data) {
-                        if (data.isConected) {
+                        if (data) {
                             self.destroyUIs("list_container");
                             model.resource.app.getLists(_inflate);
                         } else {
-                            window.location.href = "/login?next=/#/admin";                        
+                            window.location.href = "/login";                        
                         }
                     }, function (e) {
                         throw e;
