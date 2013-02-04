@@ -15,7 +15,7 @@ module.exports = function(app){
             );
     };
     
-    list_create = function(req, res) {
+    create = function(req, res) {
         var list = new List ({
             lastUpdated: new Date(), 
             user : req.user._json.email, 
@@ -25,12 +25,24 @@ module.exports = function(app){
         res.send(list);
     }
     
+    update = function(req, res) {
+        List.findOne({
+            _id: req.params.idList
+        }, function(error, list) {
+            list.lastUpdated = new Date();
+            list.products = JSON.parse(req.body.products)
+            list.save();
+            res.send(list);
+            
+        });
+    }
+    
     find = (function(req, res) {  
         List.findOne({
             _id: req.params.idList
         }, function(error, list) {  
             res.send(list);  
-        })  
+        });  
     });
     
     remove = (function(req, res) {  
@@ -47,5 +59,6 @@ module.exports = function(app){
     app.get('/list', lists);
     app.get('/list/:idList', find);
     app.delete('/list/:idList', remove);
-    app.post('/list', list_create);
+    app.put('/list/:idList', update);
+    app.post('/list', create);
 }
