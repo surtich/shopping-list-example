@@ -5,29 +5,32 @@ module.exports = function(app){
 
     //find all categories
     lists = function(req, res){
-        List.find(function(err, lists) {
-            for (var i = 0; i< lists.length; i++) {
-                
+        List.find().populate("idCategory","user").exec(
+            function(err, shoppingLists) {
+                console.log("_id =" + shoppingLists[0]._id);
+                console.log("idCategory="+shoppingLists[0].idCategory);
+                console.log("user="+shoppingLists[0].user);
+                res.send(shoppingLists);
             }
-            res.send(lists);
-        });
+            );
     };
     
     list_create = function(req, res) {
         var list = new List ({
             lastUpdated: new Date()
-            , user : req.user._json.email
-            , products: req.body.products
+            , 
+            user : req.user._json.email
+            , 
+            products: JSON.parse(req.body.products)
         });
-        
-        console.log(JSON.stringify(list));
-        
         list.save();
         res.send(list);
     }
     
     find = (function(req, res) {  
-        List.findOne({_id: req.params.idList}, function(error, list) {  
+        List.findOne({
+            _id: req.params.idList
+        }, function(error, list) {  
             res.send(list);  
         })  
     });
