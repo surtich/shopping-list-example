@@ -20,9 +20,8 @@ iris.screen(
 
         function _inflate(lists) {
             var actual = false;
-            $.each(lists,
-                
-                function(index, list) {
+            $.each(lists,                
+                function(index, list) {                    
                     list.actual = false;
                     if (list._id) {
                         list.idList = list._id;
@@ -31,7 +30,16 @@ iris.screen(
                         list.actual = true;
                         actual = true;
                     }
-                    list.numProducts = list.hasOwnProperty("productsList") ? list.productsList.length : 0;
+                    list.numProducts = list.hasOwnProperty("products") ? list.products.length : 0;
+                    list.numPurchased = 0;
+                    if (list.products) {
+                        for (var i = 0; i < list.products.length; i++) {
+                            if (list.products[i].purchased) {
+                                list.numPurchased++;
+                            }
+                        }
+                    }
+                    
                     self.ui("list_container", iris.path.ui.list.js, {
                         "list": list,
                         createNew: _newList

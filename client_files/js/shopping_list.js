@@ -124,15 +124,15 @@ var model = {};
             model.resource.app.getCategories(function(categories){
                 for (var i = 0; i < categories.length; i++) {
                     categories[i].idCategory = categories[i]._id;
-                    //delete categories[i]._id;
+                //delete categories[i]._id;
                 }
                 model.categories = categories;
                 model.resource.app.getAllProducts(function(products){
                     for (var i = 0; i < products.length; i++) {
                         products[i].idProduct = products[i]._id;
                         products[i].category = products[i].category_id;
-                        //delete products[i]._id;
-                        //delete products[i].category_id;
+                    //delete products[i]._id;
+                    //delete products[i].category_id;
                     }
                     model.products = products;
                     model.initialized = true;
@@ -445,13 +445,15 @@ var model = {};
         model.shoppingList.setIdList(list.idList);
         model.shoppingList.setLastUpdated(list.lastUpdated);
         model.shoppingList.setUpdated(true);
-        model.resource.app.getProductsList(list.productsList, function(products) {
-            for (var i in products) {
-                model.shoppingList.addShoppingProduct(products[i]);
-            }
+        for (var i in list.products) {
+            model.shoppingList.addShoppingProduct(list.products[i]);
+        }
+        
+    /*model.resource.app.getProductsList(list.productsList, function(products) {
+            
         }, function(e) {
             throw e;
-        });
+        });*/
     };
         
     model.listModified = function() {

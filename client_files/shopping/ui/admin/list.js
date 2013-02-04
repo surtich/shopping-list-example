@@ -150,12 +150,15 @@ iris.ui(function(self) {
                 iris.notify(event, l); 
             }
             list = l;
+            if (list._id) {                
+                list.idList = list._id;
+            }
             list.actual = actual;
             if (actual) {
                 list.numProducts = model.shoppingList.getShoppingProducts().length;
                 list.numPurchased = model.shoppingList.countPurchased();
             } else {
-                list.numProducts = list.hasOwnProperty("productsList") ? list.productsList.length : 0;
+                list.numProducts = list.hasOwnProperty("products") ? list.productsList.length : 0;
             }
             self.setting("list", list);
             _inflate();
