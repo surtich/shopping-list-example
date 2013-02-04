@@ -5,6 +5,8 @@ app = express(),
 passport = require('passport'),
 expressValidator = require('express-validator');
 
+var URI_CONNECTION = 'mongodb://localhost/shopping-list-database';
+
 app.configure(function(){
     app.use(express.logger());
     app.use(express.cookieParser());
@@ -32,7 +34,7 @@ routes = require('./node_files/routes/product')(app);
 routes = require('./node_files/routes/list')(app);
 
 //Connect to the MongoDB test database
-mongoose.connect('mongodb://localhost/shopping-list-database');
+mongoose.connect(URI_CONNECTION);
 
 //Start the server
 http.createServer(app).listen(8081);
