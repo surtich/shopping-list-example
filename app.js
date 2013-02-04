@@ -1,10 +1,9 @@
-var express = require('express')
-, mongoose = require('mongoose')
-, http = require('http')
-, app = express()
-, passport = require('passport');
-
-
+var express = require('express'),
+mongoose = require('mongoose'),
+http = require('http'),
+app = express(),
+passport = require('passport'),
+expressValidator = require('express-validator');
 
 app.configure(function(){
     app.use(express.logger());
@@ -17,7 +16,8 @@ app.configure(function(){
     app.use(passport.initialize());
     app.use(passport.session());
     app.use(app.router);
-    app.use(express.static(__dirname + "/client_files"));
+    app.use(express["static"](__dirname + "/client_files"));
+    app.use(expressValidator);
 });
 
 app.configure('development', function(){

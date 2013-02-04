@@ -12,5 +12,6 @@
    , "passport-google-oauth":"*"
    , "passport":"*"
    , "util":"*"
+   , "validator":"*"
  		}
  	}	

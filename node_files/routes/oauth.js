@@ -1,7 +1,5 @@
-var util = require('util')
-, GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
-
-
+var util = require('util'),
+GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 function oauth (app, passport){
     
@@ -82,9 +80,9 @@ function oauth (app, passport){
 
     app.get('/logout', function(req, res){
         req.logout();
-        req.session.destroy()
+        req.session.destroy();
         res.redirect('/');
     });
-};
+}
 
 module.exports = oauth;

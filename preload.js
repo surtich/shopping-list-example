@@ -4,93 +4,6 @@ var async = require('async');
 var client = new Db('shopping-list-database', new Server('127.0.0.1', 27017), {});
 var actual_collection = null;
 
-function done(err) {
-    if (err) {
-        throw err;
-    }
-    client.close();
-    console.log("done!");
-}
-
-
-function iterator(value, callback) {
-    actual_collection.insert(value, {}, function (err, objects) {
-        if (err) {
-            callback(err);
-        } else {
-            console.log("Inserted " + JSON.stringify(value));
-            callback();
-        }
-    });
-};
-
-
-client.open(function(err, p_client) {
-    async.series([
-        function(callback){
-            p_client.collection("lists", function (err, collection) {
-                actual_collection = collection;
-            });
-            callback(null, 'Get lists collection');
-        },
-        function(callback){
-            actual_collection.remove();
-            console.log("Lists removed");
-            callback(null, 'Lists removed');
-        },
-        function(callback){
-            p_client.collection("categories", function (err, collection) {
-                actual_collection = collection;
-            });
-            callback(null, 'Get categories collection');
-        },
-        function(callback){
-            actual_collection.remove();
-            console.log("Categories removed");
-            callback(null, 'Categories removed');
-        },
-        function(callback){
-            async.forEach(categories, iterator, function (err) {
-                if (err) {
-                    console.log(err);
-                    done();
-                    callback(err, 'Insert categories');
-                } else {
-                    callback(null, 'Insert categories');
-                }
-            });
-        },
-        function(callback){
-            p_client.collection("products", function (err, collection) {
-                actual_collection = collection;
-            });
-            callback(null, 'Get products collection');
-        },
-        function(callback){
-            actual_collection.remove();
-            console.log("Products removed");
-            callback(null, 'Products removed');
-        },
-        function(callback){
-            async.forEach(products, iterator, function (err) {
-                if (err) {
-                    console.log(err);
-                    callback(err, 'Insert products');
-                } else {
-                    callback(null, 'Insert products');
-                }
-            });
-        }
-        ],
-        // optional callback
-        function(err, results){
-            if (err) {
-                console.log(err);
-            }
-            done();
-        });
-});
-    
 var categories = [{
     "_id":1,
     "nameCategory":"Vegetables"
@@ -216,4 +129,92 @@ var products = [{
     "_id":32,
     "nameProduct":"Tuna",
     "category_id":24
-}]
+}];
+
+function done(err) {
+    if (err) {
+        throw err;
+    }
+    client.close();
+    console.log("done!");
+}
+
+
+function iterator(value, callback) {
+    actual_collection.insert(value, {}, function (err, objects) {
+        if (err) {
+            callback(err);
+        } else {
+            console.log("Inserted " + JSON.stringify(value));
+            callback();
+        }
+    });
+}
+
+
+client.open(function(err, p_client) {
+    async.series([
+        function(callback){
+            p_client.collection("lists", function (err, collection) {
+                actual_collection = collection;
+            });
+            callback(null, 'Get lists collection');
+        },
+        function(callback){
+            actual_collection.remove();
+            console.log("Lists removed");
+            callback(null, 'Lists removed');
+        },
+        function(callback){
+            p_client.collection("categories", function (err, collection) {
+                actual_collection = collection;
+            });
+            callback(null, 'Get categories collection');
+        },
+        function(callback){
+            actual_collection.remove();
+            console.log("Categories removed");
+            callback(null, 'Categories removed');
+        },
+        function(callback){
+            async.forEach(categories, iterator, function (err) {
+                if (err) {
+                    console.log(err);
+                    done();
+                    callback(err, 'Insert categories');
+                } else {
+                    callback(null, 'Insert categories');
+                }
+            });
+        },
+        function(callback){
+            p_client.collection("products", function (err, collection) {
+                actual_collection = collection;
+            });
+            callback(null, 'Get products collection');
+        },
+        function(callback){
+            actual_collection.remove();
+            console.log("Products removed");
+            callback(null, 'Products removed');
+        },
+        function(callback){
+            async.forEach(products, iterator, function (err) {
+                if (err) {
+                    console.log(err);
+                    callback(err, 'Insert products');
+                } else {
+                    callback(null, 'Insert products');
+                }
+            });
+        }
+        ],
+        // optional callback
+        function(err, results){
+            if (err) {
+                console.log(err);
+            }
+            done();
+        });
+});
+    

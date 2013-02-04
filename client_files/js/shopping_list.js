@@ -4,7 +4,7 @@ var model = {};
     
     model.initialized = false;     
     model.categories = [];
-    model.products = []
+    model.products = [];
     
     var idList = null;
     var lastUpdated = null;
@@ -57,7 +57,7 @@ var model = {};
                         model.resource.load("/category", success, error);
                     },
                     getProducts: function(idCategory, success, error) {
-                        if (idCategory == undefined) {
+                        if (idCategory === undefined) {
                             model.resource.load("/product", success, error);
                         } else {
                             model.resource.load("/product/" + idCategory, success, error);
@@ -435,7 +435,7 @@ var model = {};
     }
     
     model.listCreated = function(list) {
-        model.shoppingList.setIdList(list.idList);
+        model.shoppingList.setIdList(list._id);
         model.shoppingList.setLastUpdated(list.lastUpdated);
         model.shoppingList.setUpdated(true);
     };

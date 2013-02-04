@@ -1,3 +1,15 @@
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed.  Otherwise, the user will be redirected to the
+//   login page.
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/auth/google');
+}
+
 //App routes
 module.exports = function (app){
     
@@ -11,12 +23,12 @@ module.exports = function (app){
     }
     
     function isConected (req, res){
-        var isConected = false;
+        var isCon = false;
         if (req.isAuthenticated()) {
-            isConected = true;
-        };
-        res.send(isConected);
-    };
+            isCon = true;
+        }
+        res.send(isCon);
+    }
     
     
     function login(req, res) {
@@ -36,16 +48,5 @@ module.exports = function (app){
     app.get('/login/is_conected', isConected);
     
     
-}
+};
 
-// Simple route middleware to ensure user is authenticated.
-//   Use this route middleware on any resource that needs to be protected.  If
-//   the request is authenticated (typically via a persistent login session),
-//   the request will proceed.  Otherwise, the user will be redirected to the
-//   login page.
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect('/auth/google');
-}
