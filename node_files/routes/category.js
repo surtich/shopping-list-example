@@ -5,8 +5,8 @@ module.exports = function(app){
 
     //find all categories
     list = function(req, res){
-        Category.find(function(err, category) {
-            res.send(category);
+        Category.find(function(err, categories) {
+            res.send(categories);
         });
     };
 

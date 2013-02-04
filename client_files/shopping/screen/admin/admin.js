@@ -21,9 +21,12 @@ iris.screen(
         function _inflate(lists) {
             var actual = false;
             $.each(lists,
-          
+                
                 function(index, list) {
                     list.actual = false;
+                    if (list._id) {
+                        list.idList = list._id;
+                    }
                     if (!actual && list.idList === model.shoppingList.getIdList()) {
                         list.actual = true;
                         actual = true;
@@ -33,7 +36,7 @@ iris.screen(
                         "list": list,
                         createNew: _newList
                         
-                    }, self.APPEND);
+                    },  self.APPEND);
                 }
                 );
             if (!actual) {
@@ -54,7 +57,9 @@ iris.screen(
                     function (data) {
                         if (data) {
                             self.destroyUIs("list_container");
-                            model.resource.app.getLists(_inflate);
+                            model.resource.app.getLists(_inflate, function(p_request, p_textStatus, p_errorThrown) {
+                                throw p_textStatus;
+                            });
                         } else {
                             window.location.href = "/login";                        
                         }

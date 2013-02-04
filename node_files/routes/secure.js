@@ -1,5 +1,5 @@
 //App routes
-module.exports = function(app){
+module.exports = function (app){
     
     function requireLogin(req, res, next) {
         if (req.session.user_id) {
@@ -24,19 +24,16 @@ module.exports = function(app){
         res.redirect("/auth/google");
     }
 
-
-    function kk(req, res) {
-        res.send("hola");
-    }
-
     app.all("/list/*", ensureAuthenticated, function(req, res, next) {
-        console.log("next:"+next);
+        next();
+    });
+    
+    app.all("/list*", ensureAuthenticated, function(req, res, next) {
         next();
     });
 
     app.get('/login', login);
     app.get('/login/is_conected', isConected);
-    app.get('/list/kk', kk);
     
     
 }

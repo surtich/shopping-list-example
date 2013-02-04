@@ -1,4 +1,11 @@
-module.exports = function(app, passport, GoogleStrategy){
+var util = require('util')
+, GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
+
+
+
+function oauth (app, passport){
+    
+    
     // API Access link for creating client ID and secret:
     // https://code.google.com/apis/console/
     var GOOGLE_CLIENT_ID = "841851172902.apps.googleusercontent.com";
@@ -50,7 +57,7 @@ module.exports = function(app, passport, GoogleStrategy){
     //   request.  The first step in Google authentication will involve
     //   redirecting the user to google.com.  After authorization, Google
     //   will redirect the user back to this application at /auth/google/callback
-    app.get('/auth/google',
+     app.get('/auth/google',
         passport.authenticate('google', {
             scope: ['https://www.googleapis.com/auth/userinfo.profile',
             'https://www.googleapis.com/auth/userinfo.email']
@@ -59,7 +66,7 @@ module.exports = function(app, passport, GoogleStrategy){
         // The request will be redirected to Google for authentication, so this
         // function will not be called.
         });
-
+     
     // GET /auth/google/callback
     //   Use passport.authenticate() as route middleware to authenticate the
     //   request.  If authentication fails, the user will be redirected back to the
@@ -75,6 +82,9 @@ module.exports = function(app, passport, GoogleStrategy){
 
     app.get('/logout', function(req, res){
         req.logout();
+        req.session.destroy()
         res.redirect('/');
     });
 };
+
+module.exports = oauth;

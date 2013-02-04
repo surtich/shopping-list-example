@@ -4,8 +4,8 @@ module.exports = function(app){
 
     //find all categories
     list = function(req, res){
-        Product.find(function(err, product) {
-            res.send(product);
+        Product.find(function(err, products) {
+            res.send(products);
         });
     };
 

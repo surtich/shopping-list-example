@@ -28,6 +28,17 @@ function iterator(value, callback) {
 client.open(function(err, p_client) {
     async.series([
         function(callback){
+            p_client.collection("lists", function (err, collection) {
+                actual_collection = collection;
+            });
+            callback(null, 'Get lists collection');
+        },
+        function(callback){
+            actual_collection.remove();
+            console.log("Lists removed");
+            callback(null, 'Lists removed');
+        },
+        function(callback){
             p_client.collection("categories", function (err, collection) {
                 actual_collection = collection;
             });

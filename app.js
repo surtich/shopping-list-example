@@ -1,10 +1,8 @@
 var express = require('express')
 , mongoose = require('mongoose')
 , http = require('http')
-, passport = require('passport')
-, util = require('util')
-, GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
-, app = express();
+, app = express()
+, passport = require('passport');
 
 
 
@@ -16,8 +14,6 @@ app.configure(function(){
     app.use(express.session({
         secret: 'keyboard cat'
     }));
-    // Initialize Passport!  Also use passport.session() middleware, to support
-    // persistent login sessions (recommended).
     app.use(passport.initialize());
     app.use(passport.session());
     app.use(app.router);
@@ -29,11 +25,11 @@ app.configure('development', function(){
 });
 
 
-routes = require('./node_files/routes/oauth')(app, passport, GoogleStrategy);
+routes = require('./node_files/routes/oauth')(app, passport);
 routes = require('./node_files/routes/secure')(app);
 routes = require('./node_files/routes/category')(app);
 routes = require('./node_files/routes/product')(app);
-//routes = require('./node_files/routes/oauth')(app, oa);
+routes = require('./node_files/routes/list')(app);
 
 //Connect to the MongoDB test database
 mongoose.connect('mongodb://localhost/shopping-list-database');
