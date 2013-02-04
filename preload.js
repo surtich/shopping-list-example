@@ -1,8 +1,11 @@
 var Db = require('mongodb').Db;
 var Server = require('mongodb').Server;
 var async = require('async');
-var client = new Db('shopping-list-database', new Server('127.0.0.1', 27017), {});
+
+var URI_CONNECTION = "mongodb://localhost:27017/shopping-list-database";
+
 var actual_collection = null;
+
 
 var categories = [{
     "_id":1,
@@ -131,11 +134,11 @@ var products = [{
     "category_id":24
 }];
 
-function done(err) {
+function done(err, p_client) {
     if (err) {
         throw err;
     }
-    client.close();
+    p_client.close();
     console.log("done!");
 }
 
@@ -152,7 +155,8 @@ function iterator(value, callback) {
 }
 
 
-client.open(function(err, p_client) {
+
+function tasks(p_client) {
     async.series([
         function(callback){
             p_client.collection("lists", function (err, collection) {
@@ -214,7 +218,16 @@ client.open(function(err, p_client) {
             if (err) {
                 console.log(err);
             }
-            done();
+            done(err, p_client);
         });
-});
+
+}
+
+Db.connect(URI_CONNECTION, function(err, client) {
+    if(err) { 
+        return console.dir(err);
+    }
     
+    tasks(client);
+});
+
