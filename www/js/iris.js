@@ -1,4 +1,4 @@
-/*! Iris - v0.5.0-SNAPSHOT - 2013-01-31
+/*! Iris - v0.5.0-SNAPSHOT - 2013-02-05
 * http://iris-js.github.com/iris
 * Copyright (c) 2013 Iris; Licensed New-BSD */
 
@@ -593,6 +593,8 @@ window.iris = iris;
             throw "the welcome screen already exists";
         }
         _welcomeCreated = true;
+        _screenJsUrl["#"] = p_jsUrl;
+        _screenContainer["#"] = $(document.body);
 
         if ( window.console && window.console.log ) {
             window.console.log("[iris] noCache[" + iris.noCache() + "] enableLog[" + iris.enableLog() + "]");
@@ -604,17 +606,15 @@ window.iris = iris;
         if ( _paths.length > 0 ) {
             _load(_paths, _pathsLoaded);
         } else {
-            throw "set paths in iris.path object";
+            _pathsLoaded();
         }
-
-        _screenJsUrl["#"] = p_jsUrl;
-        _screenContainer["#"] = $(document.body);
-        
     }
 
     function _loadPaths (paths) {
         if ( typeof paths === "string" ) {
-            _paths.push(paths);
+            if ( !_includes.hasOwnProperty(paths) ) {
+                _paths.push(paths);
+            }
         } else {
             for ( var p in paths ) {
                 _loadPaths(paths[p]);
@@ -861,8 +861,12 @@ window.iris = iris;
     // UI
     //
 
-    function _registerUI(f_ui, path) {
-        _includes[path] = f_ui;
+    function _registerTmpl(path, html) {
+        _includes[path] = html;
+    }
+
+    function _registerUI(ui, path) {
+        _includes[path] = ui;
     }
 
     function _instanceUI(p_$container, p_uiId, p_jsUrl, p_uiSettings, p_templateMode) {
@@ -1406,12 +1410,35 @@ window.iris = iris;
             }
         }
     };
+
+    function _registerRes (resourceOrPath, path) {
+
+        if ( typeof resourceOrPath === "string" ) {
+            // resourceOrPath == path
+            if ( !_includes.hasOwnProperty(resourceOrPath) ) {
+                throw "add service[" + resourceOrPath + "] to iris.path";
+            }
+            return _includes[resourceOrPath];
+
+        } else {
+            // resourceOrPath == resource
+            var serv = new iris.Resource();
+            serv.cfg = {};
+            serv.settings({ type: "json", path: "" });
+            resourceOrPath(serv);
+
+            _includes[path] = serv;
+        }
+
+    }
     
     iris.screen = _registerScreen;
     iris.destroyScreen = _destroyScreenByPath;
     iris.welcome = _welcome;
     iris.navigate = _goto;
     iris.ui = _registerUI;
+    iris.tmpl = _registerTmpl;
+    iris.resource = _registerRes;
 
     //
     // Classes
@@ -1427,12 +1454,6 @@ window.iris = iris;
 })(jQuery);
 
 (function() {
-
-    var resources;
-
-    function _init () {
-        resources = {};
-    }
 
     var Resource = function() {};
 
@@ -1475,29 +1496,6 @@ window.iris = iris;
         return this.ajax("POST", p_path, p_params, f_success, f_error);
     };
 
-    iris.resource = function (resourceOrPath, path) {
-
-        if ( typeof resourceOrPath === "string" ) {
-            // resourceOrPath == path
-            if ( !resources.hasOwnProperty(resourceOrPath) ) {
-                throw "add service[" + resourceOrPath + "] to iris.path";
-            }
-            return resources[resourceOrPath];
-
-        } else {
-            // resourceOrPath == resource
-            var serv = new Resource();
-            serv.cfg = {};
-            serv.settings({ type: "json", path: "" });
-            resourceOrPath(serv);
-
-            resources[path] = serv;
-        }
-
-    };
-
-    _init();
-
-    iris.on("iris-reset", _init);
+    iris.Resource = Resource;
 
 })();
