@@ -6,9 +6,9 @@ function oauth (app, passport){
     
     // API Access link for creating client ID and secret:
     // https://code.google.com/apis/console/
-    var GOOGLE_CLIENT_ID = "841851172902.apps.googleusercontent.com";
-    var GOOGLE_CLIENT_SECRET = "uTcQb5lVmWD8jYnpuHZ4hwbw";
-    var CALLBACK_URL = "http://127.0.0.1:8081/oauth2callback";
+    var GOOGLE_CLIENT_ID = "841851172902-7c9doph39q1n9dk2c64jj6sdr8d3ulci.apps.googleusercontent.com";
+    var GOOGLE_CLIENT_SECRET = "h7IriaN4vtxMnJPU8NSP-RBT";
+    var CALLBACK_URL = "http://localhost:8081/oauth2callback";
 
     // Passport session setup.
     //   To support persistent login sessions, Passport needs to be able to

@@ -2,7 +2,7 @@ var Db = require('mongodb').Db;
 var Server = require('mongodb').Server;
 var async = require('async');
 
-var URI_CONNECTION = "mongodb://localhost:27017/shopping-list-database";
+var URI_CONNECTION = "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database";
 
 var actual_collection = null;
 

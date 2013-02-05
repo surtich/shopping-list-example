@@ -1,0 +1,28 @@
+{
+  "name": "Shopping List Example",
+  "title": "Iris",
+  "description": "This an example of a simple shopphing list application ussing Iris and Node.",
+  "version": "0.0.1",
+  "homepage": "https://github.com/surtich/shopping-list-example/tree/node",
+  "author": {
+    "name": "Iris",
+    "url": "https://github.com/surtich/shopping-list-example"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/surtich/shopping-list-example.git"
+  },
+  "bugs": {
+    "url": "https://github.com/surtich/shopping-list-example/issues"
+  },
+  "licenses": [
+    {
+      "type": "New-BSD",
+      "url": "https://github.com/iris-js/iris.git/blob/master/LICENSE-New-BSD"
+    }
+  ],
+  "dependencies": {
+    "jquery": "1.5.1"
+  },
+  "keywords": []
+}
