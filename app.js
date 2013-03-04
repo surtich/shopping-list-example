@@ -1,13 +1,24 @@
+#!/usr/bin/env node
+
 var express = require('express'),
 mongoose = require('mongoose'),
 http = require('http'),
 app = express(),
-passport = require('passport');
+passport = require('passport'),
+port = 8080,
+url  = 'http://localhost:' + port + '/';
 
 var URI_CONNECTION = "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database";
-var PORT = 8081;
+
+
+/* We can access nodejitsu enviroment variables from process.env */
+/* Note: the SUBDOMAIN variable will always be defined for a nodejitsu app */
+if(process.env.SUBDOMAIN){
+  url = 'http://' + process.env.SUBDOMAIN + '.jit.su/';
+}
 
 app.configure(function(){
+    app.set('port', process.env.PORT || port);
     app.use(express.logger());
     app.use(express.cookieParser());
     app.use(express.bodyParser());
@@ -36,5 +47,8 @@ routes = require('./node_files/routes/list')(app);
 mongoose.connect(URI_CONNECTION);
 
 //Start the server
-http.createServer(app).listen(PORT);
+http.createServer(app).listen(app.get('port'), function(){
+  console.log("Shopping List server listening on port " + app.get('port'));
+  console.log(url);
+});
 
