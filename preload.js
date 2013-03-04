@@ -2,8 +2,8 @@ var Db = require('mongodb').Db;
 var Server = require('mongodb').Server;
 var async = require('async');
 
-var URI_CONNECTION = "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database";
-
+//var URI_CONNECTION = "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database";
+var URI_CONNECTION = "mongodb://nodejitsu:426c4f35c0bb397e8406ca94df9f880d@linus.mongohq.com:10003/nodejitsudb8390532326";
 var actual_collection = null;
 
 

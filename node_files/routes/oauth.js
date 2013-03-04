@@ -1,14 +1,20 @@
 var util = require('util'),
+express = require('express'),
+app = express(),
 GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 function oauth (app, passport){
-    
-    
     // API Access link for creating client ID and secret:
     // https://code.google.com/apis/console/
     var GOOGLE_CLIENT_ID = "841851172902-7c9doph39q1n9dk2c64jj6sdr8d3ulci.apps.googleusercontent.com";
     var GOOGLE_CLIENT_SECRET = "h7IriaN4vtxMnJPU8NSP-RBT";
-    var CALLBACK_URL = "http://localhost:8081/oauth2callback";
+    
+    if(process.env.SUBDOMAIN){
+        GOOGLE_CLIENT_ID = "841851172902-5ocu8mhr5gu3jdjh06nd6lm0jldj49sd.apps.googleusercontent.com";
+        GOOGLE_CLIENT_SECRET = "4YKre3tjZZCEcq_PuTVuWQEp";
+    }
+    
+    var CALLBACK_URL = app.get('url') + "oauth2callback";
 
     // Passport session setup.
     //   To support persistent login sessions, Passport needs to be able to
@@ -55,7 +61,7 @@ function oauth (app, passport){
     //   request.  The first step in Google authentication will involve
     //   redirecting the user to google.com.  After authorization, Google
     //   will redirect the user back to this application at /auth/google/callback
-     app.get('/auth/google',
+    app.get('/auth/google',
         passport.authenticate('google', {
             scope: ['https://www.googleapis.com/auth/userinfo.profile',
             'https://www.googleapis.com/auth/userinfo.email']

@@ -8,7 +8,8 @@ passport = require('passport'),
 port = 8080,
 url  = 'http://localhost:' + port + '/';
 
-var URI_CONNECTION = "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database";
+//var URI_CONNECTION = "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database";
+var URI_CONNECTION = "mongodb://nodejitsu:426c4f35c0bb397e8406ca94df9f880d@linus.mongohq.com:10003/nodejitsudb8390532326";
 
 
 /* We can access nodejitsu enviroment variables from process.env */
@@ -19,6 +20,7 @@ if(process.env.SUBDOMAIN){
 
 app.configure(function(){
     app.set('port', process.env.PORT || port);
+    app.set('url', url);
     app.use(express.logger());
     app.use(express.cookieParser());
     app.use(express.bodyParser());
@@ -49,6 +51,6 @@ mongoose.connect(URI_CONNECTION);
 //Start the server
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Shopping List server listening on port " + app.get('port'));
-  console.log(url);
+  //console.log(url);
 });
 

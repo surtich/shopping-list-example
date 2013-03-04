@@ -1,22 +1,22 @@
 {
  "name": "shopping-list-example-node",
  "author": {
-    "name": "Javier Pérez",
-    "email": "surtich@gmail.com"
-  },
- "version": "0.0.2",
+  "name": "Javier Pérez",
+  "email": "surtich@gmail.com"
+ },
+ "version": "0.0.2-7",
  "scripts": {
   "start": "node app.js"
  },
  "dependencies": {
-  "express": "*",
-  "mongoose": "*",
-  "mongodb": "*",
-  "async": "*",
-  "passport-google-oauth": "*",
-  "passport": "*",
-  "util": "*",
-  "validator": "*"
+  "express": "3.1.0",
+  "mongoose": "3.5.5",
+  "mongodb": "1.2.11",
+  "async": "0.1.22",
+  "passport-google-oauth": "0.1.5",
+  "passport": "0.1.15",
+  "util": "0.4.9",
+  "validator": "0.4.23"
  },
  "subdomain": "surtich.shopping-list-example",
  "engines": {
