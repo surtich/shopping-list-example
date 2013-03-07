@@ -1,0 +1,16 @@
+{
+ "oauth" : {
+  "login" : {
+   "google" : {
+    "client_id"     : "841851172902-5ocu8mhr5gu3jdjh06nd6lm0jldj49sd.apps.googleusercontent.com",
+    "secret_key"    : "4YKre3tjZZCEcq_PuTVuWQEp",
+    "redirect_uri"  : "http://surtich.shopping-list-example.jit.su/oauth2callback"
+   }
+  }
+ },
+ "app" : {
+  "url" : "http://surtich.shopping-list-example.jit.su",
+  "port": 80,
+  "db": "mongodb://nodejitsu:426c4f35c0bb397e8406ca94df9f880d@linus.mongohq.com:10003/nodejitsudb8390532326"
+ }  
+}

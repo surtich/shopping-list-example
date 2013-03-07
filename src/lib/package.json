@@ -4,9 +4,9 @@
   "name": "Javier Pérez",
   "email": "surtich@gmail.com"
  },
- "version": "0.0.3-1",
+ "version": "0.0.3",
  "scripts": {
-  "start": "node src/shopping_app/app/main.js env=nodejitsu"
+  "start": "node app.js"
  },
  "dependencies": {
   "express": "3.1.x",
@@ -17,13 +17,14 @@
   "passport": "0.1.x",
   "util": "0.4.x",
   "validator": "0.4.x",
-  "q": "0.8.x",
-  "redis": "0.8.2",
-  "mocha": "1.8.x",
-  "xtend": "1.0.x",
-  "request": "x",
-  "rabbit.js": "0.2.x",
-  "amqp": "0.1.x"
+  "q"			: "0.8.x",
+  "redis"		: "0.8.2",
+  "mocha"		: "1.8.x",
+  "xtend"		: "1.0.x",
+  "request":"x",
+  "rabbit.js"	: "0.2.x",
+  "amqp"		: "0.1.x"
+	
  },
  "subdomain": "surtich.shopping-list-example",
  "engines": {
