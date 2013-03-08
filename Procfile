@@ -1,0 +1,1 @@
+web node: src/shopping_app/app/main.js env=local
