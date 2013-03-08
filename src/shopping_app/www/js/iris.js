@@ -109,11 +109,15 @@ window.iris = iris;
     eventPrototype.off = function (p_eventName, f_func){
         var callbacks = this.events[p_eventName];
         if ( callbacks ) {
+         if (f_func !== undefined) {
             var index = _indexOf(f_func, callbacks);
 
             if ( index !== -1 ) {
                 callbacks.splice(index, 1);
             }
+         } else {
+           delete this.events[p_eventName];
+         }
         }
     };
 

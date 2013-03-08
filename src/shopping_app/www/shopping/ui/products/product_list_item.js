@@ -6,28 +6,26 @@ iris.ui(function(self) {
   self.tmpl(iris.path.ui.product_list_item.html, product);
   self.get("product").change(function (event) {
    if (this.checked) {
-    iris.resource(iris.path.service.shopping).addShoppingProduct(product._id, function() {
-     iris.notify(model.event.PRODUCTS.ADD, product);
-     iris.notify(model.event.ADMIN.MODIFIED_LIST);
+    iris.resource(iris.path.service.shopping).shopping.addShoppingProduct(product, function() {
     });
    } else {
-    iris.resource(iris.path.service.shopping).removeShoppingProduct(product._id, function() {
-     iris.notify(model.event.PRODUCTS.REMOVE, product.idProduct);
-     iris.notify(model.event.ADMIN.MODIFIED_LIST);
+    iris.resource(iris.path.service.shopping).shopping.removeShoppingProduct(product, function() {
     });
    } 
             
   });
+  
+  self.on(iris.evts.shopping.productAdded, function(productAdded) {
+   if (productAdded._id === product._id) {
+    self.get("product").prop('checked', true);
+   }
+  });
+  
+  self.on(iris.evts.shopping.productRemoved, function(productRemoved) {
+   if (productRemoved._id === product._id) {
+    self.get("product").prop('checked', false);
+   }
+  });
  };
     
- self.awake = function() {
- /*
-        var p = model.shoppingList.getShoppingProduct(product.idProduct);
-        if (p) {
-            self.get("product").prop('checked', true);
-        } else {
-            self.get("product").prop('checked', false);
-        }
-        */
- };
 }, iris.path.ui.product_list_item.js);

@@ -28,5 +28,25 @@ exports.paths = [
 		"method" : "DELETE",
 		"path": "/shopping/remove/:shopping_id/product/:product_id",
 		"handler": require("./path/removeShoppingProduct")
+	},
+	{
+		"method" : "DELETE",
+		"path": "/shopping/remove/:shopping_id",
+		"handler": require("./path/removeAllShoppingProducts")
+	},
+	{
+		"method" : "DELETE",
+		"path": "/shopping/remove/purchased/:shopping_id",
+		"handler": require("./path/removePurchasedProducts")
+	},
+	{
+		"method" : "PUT",
+		"path": "/shopping/purchase/:shopping_id/product/:product_id/purchased/:purchased",
+		"handler": require("./path/purchaseShoppingProduct")
+	},
+	{
+		"method" : "PUT",
+		"path": "/shopping/purchase/:shopping_id/purchased/:purchased",
+		"handler": require("./path/purchaseAllShoppingProducts")
 	}
 ]

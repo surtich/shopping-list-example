@@ -12,7 +12,7 @@ function handler(req, res){
     err : 'not found'
    });
   } else {
-   res.send(200, {});
+   res.send(200, ret);
   }
  });
 }

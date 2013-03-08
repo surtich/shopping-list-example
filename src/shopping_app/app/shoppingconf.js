@@ -3,6 +3,7 @@ extend	= commons.extend,
 mongodb = commons.mongodb,
 async	= commons.async,
 ObjectID = commons.mongodb.ObjectID,
+util = commons.util,
 hero	= commons.hero;
 
 module.exports = hero.worker (
@@ -13,7 +14,7 @@ module.exports = hero.worker (
 
   var dbCategoryConfMongodb = self.db('categories', self.config.app.db);
 
-  var colUsers, colKinds, colCategories, colProducts, colShoppings;
+  var colUsers, colKinds, colCounters, colCategories, colProducts, colShoppings;
 
   self.ready = function(p_cbk){
    async.parallel (
@@ -23,6 +24,7 @@ module.exports = hero.worker (
      dbCategoryConfMongodb.setup(
       function(err, client){
        self.mongo_client = client;
+       colCounters = new mongodb.Collection(client, 'counters');
        colCategories = new mongodb.Collection(client, 'categories');
        colProducts = new mongodb.Collection(client, 'products');
        colShoppings = new mongodb.Collection(client, 'shoppings');
@@ -39,192 +41,6 @@ module.exports = hero.worker (
     }
     );
   };
-
-  // -----
-  // USERS
-  // -----
-
-  function getUserFromId(userId, p_cbk){
-   var find = {
-    usr: ObjectID(String(userId))
-   };
-
-   colUsers.findOne(find, {
-    fields:{
-     _id:0
-    }
-   }, function(err, user){
-    if(err || user === null){
-     p_cbk(err, null);
-    } else {
-     p_cbk(null, user);
-    }
-   });
-  }
-
-  function getUserFromEmail(email, p_cbk){
-   var find = {
-    email : email
-   };
-
-   colUsers.findOne(find, {
-    fields:{
-     _id:0
-    }
-   }, function(err, user){
-    if(err || user === null){
-     p_cbk(err, null);
-    } else {
-     p_cbk(null, user);
-    }
-   });
-  }
-
-  function createUser(email, p_cbk){
-   var user = {
-    usr : ObjectID(),
-    email: email,
-    lan : 'en',
-    knds : [],
-    idps : []
-   };
-
-   colUsers.insert(user, {
-    w:1
-   }, function(err, users){
-    if(err || users.length === 0){
-     p_cbk(err, null);
-    } else {
-     p_cbk(null, users[0]);
-    }
-   });
-  }
-
-  // -----
-  // IDPS
-  // -----
-  function setUserIdp(userId, idp, p_cbk){
-   // redis_client.set("idp:" + idp.idp + ":" + idp.uid, userId, function(){});
-
-   var find = {
-    usr: ObjectID(String(userId)),
-    'idps.idp': idp.idp
-   };
-
-   var set = {
-    $set:{
-     'idps.$.uid': idp.uid
-    }
-   };
-
-   colUsers.update(find, set, function(err,res){
-    if(res){
-     // idp updated
-     p_cbk(err,res);
-    } else {
-     // idp does not exists, must be created
-     var find = {
-      usr: ObjectID(String(userId))
-     };
-
-     var set = {
-      $addToSet: {
-       'idps': idp
-      }
-     };
-
-     colUsers.update(find, set, function(err,res){
-      p_cbk(err,res);
-     });
-    }
-   });
-  }
-
-  // -----
-  // CATEGORIES
-  // -----
-  function addKind(knd, p_cbk){
-   colKinds.insert(knd, function(err, result){
-    if(!err){
-     p_cbk(result);
-    }
-   });
-  }
-
-
-
-  function setUserKind(userId, knd, p_cbk){
-   if(knd.act === undefined){
-    knd.act = 0;
-   }
-
-   setUserKindAction(userId, knd.knd, knd.act, function(err,res){
-    if(res){
-     p_cbk(err,res);
-    } else {
-     var find = {
-      usr: ObjectID(String(userId))
-     };
-
-     var set = {
-      $addToSet: {
-       'knds': {
-        'knd': String(knd.knd),
-        'act': parseInt(knd.act, 10)
-       }
-      }
-     };
-
-     colUsers.update(find, set, function(err,res){
-      p_cbk(err,res);
-     });
-    }
-   });
-  }
-
-  function setUserKindAction(userId, kndId, action, p_cbk){
-   if(action === undefined){
-    action = 0;
-   }
-
-   redis_client.set("cfg:usr:" + userId + ":knd:" + kndId + ":actions", action, function(){});
-
-   var find = {
-    usr: ObjectID(String(userId)),
-    'knds.knd': String(kndId)
-   };
-
-   var set = {
-    $set:{
-     'knds.$.act': parseInt(action,10)
-    }
-   };
-
-   colUsers.update(find, set, function(err,res){
-    if(err || res === undefined){
-     var find = {
-      usr: ObjectID(String(userId))
-     };
-
-     var set = {
-      $addToSet: {
-       'knds': {
-        'knd': String(kndId),
-        'act': parseInt(action, 10)
-       }
-      }
-     };
-
-     colUsers.update(find, set, function(err,res){
-      p_cbk(err,res);
-     });
-    } else {
-     p_cbk(err,res);
-    }
-   });
- 
-   
-  }
 
 
   function getAllCategories(p_cbk){
@@ -267,29 +83,40 @@ module.exports = hero.worker (
    var find = {
     _id: ObjectID(String(shopping_id))
    };
+   
+   var projection = {
+    "products.order": 1, 
+    "_id": 0
+   }
 
    getProduct(product_id, function (err, product) {
     if(err || !product) {
      err = "Product with _id =" + product_id + " does not exists.";
      p_cbk(err, product);
     } else {
-     var set = {
-      $addToSet: {
-       'products': {
-        'product_id': parseInt(product_id, 10),
-        'product_name': product.name,
-        'purchased': false
-       }
+     getNextSequence(shopping_id, function(err ,ret) {
+      if (!err) {
+       var set = {
+        $addToSet: {
+         'products': {
+          'product_id': parseInt(product_id, 10),
+          'order': ret.seq,
+          'product_name': product.name,
+          'purchased': 0
+         }
+        }
+       };
+       colShoppings.update(find, set, {
+        w: 1
+       }, function(err, res){
+        p_cbk(err, {
+         order: ret.seq
+        });
+       }); 
       }
-     };
-     colShoppings.update(find, set, {
-      w: 1
-     }, function(err, res){
-      p_cbk(err, res);
      });
     }
    });
-   
   }
   
   function removeShoppingProduct(shopping_id, product_id, p_cbk){
@@ -320,6 +147,24 @@ module.exports = hero.worker (
    
   }
   
+  function removeAllShoppingProducts(shopping_id, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+
+   var set = {
+    $set: {
+     'products': []
+    }
+   };
+   
+   colShoppings.update(find, set, {
+    w: 1
+   }, function(err, res){
+    p_cbk(err, res);
+   });
+  }
+   
   function getProduct(product_id, p_cbk){
    colProducts.findOne({
     _id: parseInt(product_id, 10)
@@ -328,21 +173,154 @@ module.exports = hero.worker (
    });
   }
   
+  function purchaseProduct(shopping_id, product_id, purchased, p_cbk){
+   
+   var find = {
+    _id: ObjectID(String(shopping_id)),    
+    "products.product_id": parseInt(product_id, 10)
+   };
+   
+   var set = {
+    $set: {
+     "products.$.purchased": purchased === "true" ? 1 : 0
+    }
+   };
+   
+   colShoppings.update(find, set, {
+    w: 1
+   }, function(err, res){
+    p_cbk(err, res);
+   });
+  }
+  
+  function purchaseAllProducts(shopping_id, purchased, p_cbk){
+   if (purchased === "invert") {
+    invertPurchaseAllProducts(shopping_id, p_cbk);
+   } else {
+    purchased = (purchased === "true");
+   
+    var find = {
+     _id: ObjectID(String(shopping_id)),    
+     "products.purchased": {
+      $mod: [2, !purchased ? 1 : 0]
+     }
+    };
+   
+    var set = {
+     $set: {
+      "products.$.purchased": purchased ? 1 : 0
+     }
+    };
+   
+    var end = false;
+   
+    async.whilst(
+     function () {
+      return end === false;
+     },
+     function (callback) {
+      colShoppings.update(find, set, {
+       w: 1
+      }, function(err, res){
+       end = (res === 0);
+       callback(err);
+      });
+     },
+     function (err) {
+      p_cbk(err, 1);
+     }
+     );
+   }
+  }
+  
+  function invertPurchaseAllProducts(shopping_id, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+    
+   var projection = {
+    products: 1,
+    _id: 0
+   };
+   
+   var inc = {
+    $inc: {
+     "products.$.purchased":1
+    }
+   };
+     
+    
+   colShoppings.find(find, projection).toArray(function(err, items){
+    
+    async.forEach(items[0].products, invertPurchase, function(err){
+     p_cbk(err);
+    });
+     
+    function invertPurchase(product, callback) {
+     find = {
+      _id: ObjectID(String(shopping_id)),
+      "products.product_id": product.product_id
+     };
+     
+     colShoppings.update(find, inc, {
+      w: 1
+     }, function(err, res){
+      callback(err);
+     }); 
+    }
+    
+   });
+  }
+  
+  function removePurchasedProducts(shopping_id, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+   
+   var remove = {
+    $pull: {
+     "products": {
+      "purchased": {
+       $mod: [2, 1]
+      }
+     }
+    }
+   };
+ 
+   colShoppings.update(find, remove, {
+    w: 1
+   }, function(err, res){
+    p_cbk(err, res);
+   });
+   
+  }
 
-  self.createUser = createUser;
-  self.setUserIdp = setUserIdp;
-  self.getUserFromId = getUserFromId;
-  self.getUserFromEmail = getUserFromEmail;
-  self.addKind = addKind;
-
-  self.setUserKind = setUserKind;
-  self.setUserKindAction = setUserKindAction;
+ 
+  function getNextSequence(name, p_cbk) {
+   colCounters.findAndModify({
+    _id: name
+   }, {}, {
+    $inc: {
+     seq: 1
+    }
+   }, {
+    "new": true, 
+    "upsert": true
+   }, function (err, ret) {
+    p_cbk(err, ret);
+   });
+   
+  }
 
   self.getAllCategories = getAllCategories;
   self.getProducts = getProducts;
   self.getProduct = getProduct;
+  self.purchaseProduct = purchaseProduct;
+  self.purchaseAllProducts = purchaseAllProducts;
   self.createShoppingList = createShoppingList;
   self.addShoppingProduct = addShoppingProduct;
   self.removeShoppingProduct = removeShoppingProduct;
+  self.removeAllShoppingProducts = removeAllShoppingProducts;
+  self.removePurchasedProducts = removePurchasedProducts;
  }
  );

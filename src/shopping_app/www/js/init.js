@@ -116,6 +116,13 @@ $(document).ready(
    }
   };
         
+  iris.evts = {
+   shopping : {
+     productAdded: "shopping_product_added",
+     productRemoved: "shopping_product_removed",
+     productPurchased: "shopping_product_purchased"
+   }
+  };
         
   iris.on(iris.SERVICE_ERROR, function(p_request, p_textStatus, p_errorThrown) {
    if (p_request.request.status === 401) {
