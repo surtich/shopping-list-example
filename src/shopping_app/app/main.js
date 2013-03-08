@@ -10,15 +10,6 @@ shoppingconf = require('./shoppingconf.js'),
 port = shoppingconf.config.app.port,
 url  = shoppingconf.config.app.url + ":" + port + '/';
 
-//var URI_CONNECTION = "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database";
-//var URI_CONNECTION = hero.config().app.db;
-
-/* We can access nodejitsu enviroment variables from process.env */
-/* Note: the SUBDOMAIN variable will always be defined for a nodejitsu app */
-if(process.env.SUBDOMAIN){
- url = 'http://' + process.env.SUBDOMAIN + '.jit.su/';
-}
-
 app.configure(function(){
  app.set('port', process.env.PORT || port);
  app.set('url', url);
@@ -39,21 +30,6 @@ app.configure('development', function(){
  app.use(express.errorHandler());
 });
 
-/*
-routes = require('./routes/oauth')(app, passport);
-routes = require('./routes/secure')(app);
-routes = require('./routes/category')(app);
-routes = require('./routes/product')(app);
-routes = require('./routes/list')(app);
-*/
-//Connect to the MongoDB test database
-//mongoose.connect(URI_CONNECTION);
-
-//Start the server
-//http.createServer(app).listen(app.get('port'), function(){
- //console.log("Shopping List server listening on port " + app.get('port'));
-//console.log(url);
-//});
 
 
 hero.init(
