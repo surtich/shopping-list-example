@@ -1,1 +1,1 @@
-web node: src/shopping_app/app/main.js env=local
+web: node src/shopping_app/app/main.js env=local
