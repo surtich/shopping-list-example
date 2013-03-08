@@ -41,7 +41,7 @@ hero.init(
     hero.error(err);
    } else {
     app.listen(port);
-    console.log('listening on port ' + port);
+    console.log('listening on port ' + app.get('port'));
    }
   });
  }
