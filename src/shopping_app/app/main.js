@@ -40,7 +40,7 @@ hero.init(
    if(err) {
     hero.error(err);
    } else {
-    app.listen(port);
+    app.listen(app.get('port'));
     console.log('listening on port ' + app.get('port'));
    }
   });
