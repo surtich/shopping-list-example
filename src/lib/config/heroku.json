@@ -9,7 +9,7 @@
   }
  },
  "app" : {
-  "url" : "http://shopping-list-example.herokuapp.com/",
+  "url" : "http://http://fast-spire-5370.herokuapp.com//",
   "port": 80,
   "db": {
     "uri": "mongodb://shopping-list-database-user:shopping-user-23ewejfoiejfe@linus.mongohq.com:10077/shopping-list-database",
