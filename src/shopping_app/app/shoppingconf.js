@@ -3,35 +3,67 @@ extend	= commons.extend,
 mongodb = commons.mongodb,
 async	= commons.async,
 ObjectID = commons.mongodb.ObjectID,
+passport = commons.passport,
+GoogleStrategy	= commons.GoogleStrategy,
 util = commons.util,
-hero	= commons.hero;
+hero	= commons.hero,
+app		= hero.app,
+express	= commons.express,
+auth = require('./auth.js'),
+secure = require('./secure.js');
+
 
 module.exports = hero.worker (
  function(self){
-  var redis_client;
-  var mongo_client = mongodb.MongoClient;
-  var mongo_db;
+  var port = self.config.app.port;
+  var url  = self.config.app.url + ":" + port + '/';
 
-  var dbCategoryConfMongodb = self.db('categories', self.config.app.db);
+  var dbShoppingConfMongodb = self.db('shopping', self.config.app.db);
+   
+  
+  var colCounters, colCategories, colProducts, colShoppings;
 
-  var colUsers, colKinds, colCounters, colCategories, colProducts, colShoppings;
-
+  // Configuration
+  app.configure(function() {
+   app.set('port', process.env.PORT || port);
+   app.set('url', url);
+   app.use(express.logger());
+   app.use(express.cookieParser());
+   app.use(express.bodyParser());
+   app.use(express.session({
+    secret: 'SEC12345678RET'
+   /*store: new RedisStore({
+     host: self.config.db.session.host, 
+     port: self.config.db.session.port, 
+     client: dbSession.client
+    })*/
+   }));
+   app.use(express.methodOverride());
+   app.use(passport.initialize());
+   app.use(passport.session());
+   app.use(app.router);
+   app.use(express.errorHandler({
+    dumpExceptions : true,
+    showStack : true
+   }));
+   app.use(express["static"](__dirname + "/../www"));
+  });
+  
+  auth(self);
+  secure();
+    
   self.ready = function(p_cbk){
    async.parallel (
     [
     // mongoDb
     function(done){
-     dbCategoryConfMongodb.setup(
+     dbShoppingConfMongodb.setup(
       function(err, client){
        self.mongo_client = client;
        colCounters = new mongodb.Collection(client, 'counters');
        colCategories = new mongodb.Collection(client, 'categories');
        colProducts = new mongodb.Collection(client, 'products');
        colShoppings = new mongodb.Collection(client, 'shoppings');
-       colUsers = new mongodb.Collection(client, 'users');
-       self.colUsers = colUsers;
-       colKinds = new mongodb.Collection(client, 'kinds');
-       self.colKinds = colKinds;
        done(null);
       }
       );
