@@ -23,8 +23,9 @@
   "xtend"		: "1.0.x",
   "request":"x",
   "rabbit.js"	: "0.2.x",
-  "amqp"		: "0.1.x"
-	
+  "amqp"		: "0.1.x",
+  "redis"		: "0.8.2",
+  "connect-redis" : "x"
  },
  "subdomain": "surtich.shopping-list-example",
  "engines": {

@@ -33,7 +33,28 @@ var find = {
 };
 
 var set = {
- $set: {"products.$.purchased": true}
+ $set: {
+  "products.$.purchased": true
+ }
 }
 
 db.shoppings.update(find, set);
+
+print("List Shoppings");
+
+map = function() {
+ emit(this._id, {
+  products_count: 0
+ });
+};
+
+reduce = function(key, values) {
+ var products = 0;
+ values.forEach(function(value) {
+  products += value.products.count;
+ });
+ return {
+  products: products
+ };
+}
+

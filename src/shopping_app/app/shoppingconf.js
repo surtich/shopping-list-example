@@ -10,18 +10,22 @@ hero	= commons.hero,
 app		= hero.app,
 express	= commons.express,
 auth = require('./auth.js'),
-secure = require('./secure.js');
+secure = require('./secure.js'),
+RedisStore		= commons.RedisStore;
 
 
 module.exports = hero.worker (
  function(self){
   var port = self.config.app.port;
   var url  = self.config.app.url + ":" + port + '/';
+  var redis_client;
 
-  var dbShoppingConfMongodb = self.db('shopping', self.config.app.db);
-   
+  var dbShopping = self.db('shopping', self.config.app.db.shopping_conf);
+  var dbSession = self.db('session', self.config.app.db.session);
+  var dbUsers = self.db('user', self.config.app.db.user_config);
+  self.dbUsers = dbUsers;
   
-  var colCounters, colCategories, colProducts, colShoppings;
+  var colCounters, colUsers, colCategories, colProducts, colShoppings;
 
   // Configuration
   app.configure(function() {
@@ -31,12 +35,12 @@ module.exports = hero.worker (
    app.use(express.cookieParser());
    app.use(express.bodyParser());
    app.use(express.session({
-    secret: 'SEC12345678RET'
-   /*store: new RedisStore({
-     host: self.config.db.session.host, 
-     port: self.config.db.session.port, 
+    secret: 'SEC12345678RET',
+    store: new RedisStore({
+     host: self.config.app.db.session.host, 
+     port: self.config.app.db.session.port, 
      client: dbSession.client
-    })*/
+    })
    }));
    app.use(express.methodOverride());
    app.use(passport.initialize());
@@ -57,13 +61,24 @@ module.exports = hero.worker (
     [
     // mongoDb
     function(done){
-     dbShoppingConfMongodb.setup(
+     dbShopping.setup(
       function(err, client){
        self.mongo_client = client;
+       colUsers = new mongodb.Collection(client, 'users');
        colCounters = new mongodb.Collection(client, 'counters');
        colCategories = new mongodb.Collection(client, 'categories');
        colProducts = new mongodb.Collection(client, 'products');
        colShoppings = new mongodb.Collection(client, 'shoppings');
+       done(null);
+      }
+      );
+    },
+    // redis
+    function(done){
+     dbUsers.setup(
+      function(err, client){
+       redis_client = client;
+       self.redis_client = redis_client;
        done(null);
       }
       );
@@ -73,6 +88,111 @@ module.exports = hero.worker (
     }
     );
   };
+
+
+  // -----
+  // USERS
+  // -----
+
+  function getUserFromId(userId, p_cbk){
+   var find = {
+    usr: ObjectID(String(userId))
+   };
+
+   colUsers.findOne(find, {
+    fields:{
+     _id:0
+    }
+   }, function(err, user){
+    if(err || user === null){
+     p_cbk(err, null);
+    } else {
+     p_cbk(null, user);
+    }
+   });
+  }
+
+  function getUserFromEmail(email, p_cbk){
+   var find = {
+    email : email
+   };
+
+   colUsers.findOne(find, {
+    fields:{
+     _id:0
+    }
+   }, function(err, user){
+    if(err || user === null){
+     p_cbk(err, null);
+    } else {
+     p_cbk(null, user);
+    }
+   });
+  }
+
+  function createUser(email, p_cbk){
+   var user = {
+    usr : ObjectID(),
+    email: email,
+    lan : 'en',
+    knds : [],
+    idps : []
+   };
+
+   colUsers.insert(user, {
+    w:1
+   }, function(err, users){
+    if(err || users.length === 0){
+     p_cbk(err, null);
+    } else {
+     p_cbk(null, users[0]);
+    }
+   });
+  }
+
+  // -----
+  // IDPS
+  // -----
+  function setUserIdp(userId, idp, p_cbk){
+   // redis_client.set("idp:" + idp.idp + ":" + idp.uid, userId, function(){});
+
+   var find = {
+    usr: ObjectID(String(userId)),
+    'idps.idp': idp.idp
+   };
+
+   var set = {
+    $set:{
+     'idps.$.uid': idp.uid
+    }
+   };
+
+   colUsers.update(find, set, function(err,res){
+    if(res){
+     // idp updated
+     p_cbk(err,res);
+    } else {
+     // idp does not exists, must be created
+     var find = {
+      usr: ObjectID(String(userId))
+     };
+
+     var set = {
+      $addToSet: {
+       'idps': idp
+      }
+     };
+
+     colUsers.update(find, set, function(err,res){
+      p_cbk(err,res);
+     });
+    }
+   });
+  }
+
+  // -----
+  // PRODUCTS
+  // -----
 
 
   function getAllCategories(p_cbk){
@@ -93,10 +213,17 @@ module.exports = hero.worker (
    });
   }
 
-  function createShoppingList(p_cbk){
+  // -----
+  // SHOPPINGS
+  // -----
+
+
+  function createShoppingList(email, p_cbk){
    var shoppingList = {
     _id : ObjectID(),
-    products : []
+    products : [],
+    email: email,
+    last_updated: new Date()
    };
 
    colShoppings.insert(shoppingList, {
@@ -109,6 +236,28 @@ module.exports = hero.worker (
     }
    });
   }
+  
+  function updateShoppingListDate(shopping_id, p_cbk){
+   
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+   
+   var set = {
+    $set:{
+     'last_updated': new Date()
+    }
+   };
+   
+   colShoppings.update(find, set, {
+    w: 1
+   }, function(err, res){
+    p_cbk(err, res);
+   });
+   
+  }
+  
+  
     
   function addShoppingProduct(shopping_id, product_id, p_cbk){
    
@@ -136,6 +285,9 @@ module.exports = hero.worker (
           'product_name': product.name,
           'purchased': 0
          }
+        },
+        $set:{
+         'last_updated': new Date()
         }
        };
        colShoppings.update(find, set, {
@@ -167,6 +319,9 @@ module.exports = hero.worker (
        'products': {
         'product_id': parseInt(product_id, 10)
        }
+      },
+      $set:{
+       'last_updated': new Date()
       }
      };
      colShoppings.update(find, remove, {
@@ -186,7 +341,8 @@ module.exports = hero.worker (
 
    var set = {
     $set: {
-     'products': []
+     'products': [],
+     'last_updated': new Date()
     }
    };
    
@@ -214,7 +370,8 @@ module.exports = hero.worker (
    
    var set = {
     $set: {
-     "products.$.purchased": purchased === "true" ? 1 : 0
+     "products.$.purchased": purchased === "true" ? 1 : 0,
+     'last_updated': new Date()
     }
    };
    
@@ -240,7 +397,8 @@ module.exports = hero.worker (
    
     var set = {
      $set: {
-      "products.$.purchased": purchased ? 1 : 0
+      "products.$.purchased": purchased ? 1 : 0,
+      'last_updated': new Date()
      }
     };
    
@@ -278,6 +436,9 @@ module.exports = hero.worker (
    var inc = {
     $inc: {
      "products.$.purchased":1
+    },
+    $set: {
+     'last_updated': new Date()
     }
    };
      
@@ -316,6 +477,9 @@ module.exports = hero.worker (
        $mod: [2, 1]
       }
      }
+    },
+    $set: {
+     'last_updated': new Date()
     }
    };
  
@@ -326,6 +490,19 @@ module.exports = hero.worker (
    });
    
   }
+  
+  function getShoppings(p_cbk){
+   colShoppings.find({}).toArray(function(err, items){
+    if(!err){
+     p_cbk(items);
+    }
+   });
+  }
+
+
+  // -----
+  // UTILS
+  // -----
 
  
   function getNextSequence(name, p_cbk) {
@@ -344,6 +521,10 @@ module.exports = hero.worker (
    
   }
 
+  self.getUserFromId = getUserFromId;
+  self.getUserFromEmail = getUserFromEmail;
+  self.createUser = createUser;
+  self.setUserIdp = setUserIdp;
   self.getAllCategories = getAllCategories;
   self.getProducts = getProducts;
   self.getProduct = getProduct;
@@ -354,5 +535,6 @@ module.exports = hero.worker (
   self.removeShoppingProduct = removeShoppingProduct;
   self.removeAllShoppingProducts = removeAllShoppingProducts;
   self.removePurchasedProducts = removePurchasedProducts;
+  self.getShoppings = getShoppings;
  }
  );

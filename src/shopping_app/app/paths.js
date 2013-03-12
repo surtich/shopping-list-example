@@ -1,5 +1,15 @@
 exports.paths = [
 	{
+		"method" : "POST",
+		"path": "/api/user",
+		"handler": require("./path/post_user")
+	},
+ {
+		"method" : "GET",
+		"path": "/api/user",
+		"handler": require("./path/get_user")
+	},
+	{
 		"method": "GET",
 		"path": "/category",
 		"handler": require("./path/category")
@@ -48,5 +58,10 @@ exports.paths = [
 		"method" : "PUT",
 		"path": "/shopping/purchase/:shopping_id/purchased/:purchased",
 		"handler": require("./path/purchaseAllShoppingProducts")
+	},
+ {
+		"method": "GET",
+		"path": "/shoppings",
+		"handler": require("./path/shoppingsByUser")
 	}
 ]

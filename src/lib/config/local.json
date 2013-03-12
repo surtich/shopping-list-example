@@ -11,9 +11,24 @@
  "app" : {
   "url" : "http://localhost",
   "port": 8081,
-  "db": {
+  "db": 
+  {
+   "shopping_conf": {
     "uri": "mongodb://localhost/shopping-list-database",
     "type": "mongodb"
+   },
+   "session" : {
+    "host" : "localhost",
+    "port" : "6379",
+    "type" : "redis",
+    "params" : {}
+   },
+   "user_config" : {
+    "host" : "localhost",
+    "port" : "6379",
+    "type" : "redis",
+    "params" : {}
+   }
   }
  }  
 }

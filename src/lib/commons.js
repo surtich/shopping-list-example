@@ -10,6 +10,7 @@ module.exports.passport		= require('passport');		// passport
 module.exports.GoogleStrategy  = require('passport-google-oauth').OAuth2Strategy
 module.exports.validator = require('validator'); //validator
 
+module.exports.RedisStore = require('connect-redis')(module.exports.express); //redis session storage
 module.exports.request	= require('request');    	// nodejs request
 module.exports.q 		= require('q');      		// defered & promises management
 module.exports.rabbit	= require("rabbit.js");  	// mq

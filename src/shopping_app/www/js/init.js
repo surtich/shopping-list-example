@@ -112,15 +112,17 @@ $(document).ready(
    service: {
     categories: "/shopping/service/categories.js",
     products: "/shopping/service/products.js",
-    shopping: "/shopping/service/shopping.js"  
+    shopping: "/shopping/service/shopping.js",
+    shoppingLists: "/shopping/service/shoppingLists.js",
+    auth: "/shopping/service/auth.js"
    }
   };
         
   iris.evts = {
    shopping : {
-     productAdded: "shopping_product_added",
-     productRemoved: "shopping_product_removed",
-     productPurchased: "shopping_product_purchased"
+    productAdded: "shopping_product_added",
+    productRemoved: "shopping_product_removed",
+    productPurchased: "shopping_product_purchased"
    }
   };
         

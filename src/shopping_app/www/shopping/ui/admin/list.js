@@ -18,7 +18,7 @@ iris.ui(function(self) {
         
         self.get("btn_save").toggle(list.actual && list.idList != null);
         self.get("actual").toggle(list.actual);
-        self.get("btn_save").toggleClass("disabled", model.shoppingList.getUpdated()).prop("disabled", model.shoppingList.getUpdated());
+        //self.get("btn_save").toggleClass("disabled", model.shoppingList.getUpdated()).prop("disabled", model.shoppingList.getUpdated());
         var lastUpdated = list.lastUpdated;
         if (lastUpdated) {
             self.get("last_updated").text(iris.translate("UPDATED") + ": " + lastUpdated);
@@ -38,7 +38,7 @@ iris.ui(function(self) {
     
     self.create = function() {
         self.tmpl(iris.path.ui.list.html);
-        iris.on(model.event.ADMIN.CHANGE_STATE, _changeState);
+        //iris.on(model.event.ADMIN.CHANGE_STATE, _changeState);
         
         
         self.get("btn_create").click(function() {
@@ -72,8 +72,8 @@ iris.ui(function(self) {
     self.awake = function() {
         list = self.setting("list");
         if (list.actual) {
-            list.numProducts = model.shoppingList.getShoppingProducts().length;
-            list.numPurchased = model.shoppingList.countPurchased();
+            //list.numProducts = model.shoppingList.getShoppingProducts().length;
+            //list.numPurchased = model.shoppingList.countPurchased();
         }
         _inflate();
     };

@@ -3,10 +3,11 @@ passport = commons.passport,
 GoogleStrategy	= commons.GoogleStrategy,
 util = commons.util,
 hero	= commons.hero,
+request			= commons.request,
 app		= hero.app;
 
 function auth (self) {
-
+ 
  passport.use(
   new GoogleStrategy({
    clientID    : self.config.oauth.login.google.client_id,
@@ -15,20 +16,103 @@ function auth (self) {
   },
 
   function(accessToken, refreshToken, profile, done) {
-   // asynchronous verification, for effect...
-   process.nextTick(function () {
-      
-    // To keep the example simple, the user's Google profile is returned to
-    // represent the logged-in user.  In a typical application, you would want
-    // to associate the Google account with a user record in your database,
-    // and return that user instead.
-    //console.log("passport.use profile=" + JSON.stringify(profile));
-    return done(null, profile);
+   debugger
+   var idp      = 'google';
+   var idpUid   = profile.id;
+   var idpEmail = profile.emails[0].value;
+
+   getUid(idp, idpUid, function (err, uid){
+    debugger
+    if(err===null) {
+     if ( uid===null) {
+      createAccount( idp, idpUid, idpEmail, done);
+     }
+     else {
+      done(null, uid);
+     }
+    }
    });
   }
   ));
+   
+ passport.serializeUser(function(user, done) {
+  done(null, user);
+ });
 
+ passport.deserializeUser(function(id, done) {
+  if (!self.user) {
+   self.user = {};
+  }
+  if(self.user[id]) {
+   done(null, self.user[id]);
+  } else {
+   self.getUserFromId(id, function(err, user) {
+    debugger
+    if (err) {
+     done(err, null);
+    } else {
+     self.user[id] = user;
+     done(null, self.user[id]);
+    }
+   }); 
+  }
+  
+ });
+ 
+ function getUid(p_idp, p_idpUid, callback){
+  debugger
+  console.log( 'getUid', p_idp, p_idpUid );
+  self.dbUsers.client.get('idp:'+p_idp+':'+p_idpUid, function (err, uid) {
+   debugger
+   console.log('getUid response', 'idp:'+p_idp+':'+p_idpUid, uid);
+   if(err){
+    hero.err(err);
+    callback(err, null);
+   }
+   else if ( uid === null ) {
+    callback(null, null);
+   }
+   else {
+    callback(null, uid);
+   }
+  });
+ }
 
+ function createAccount(p_idp, p_idpUid, p_email, callback){
+  console.log( 'createAccount', p_idp, p_idpUid, p_email );
+  //saveUid(p_idp, p_idpUid, Math.random()*10000, callback);
+
+  request.post(
+  {
+   headers : {
+    'content-type' : 'application/json'
+   },
+   url : app.get('url') + "api/user",
+   body : JSON.stringify( {
+    idp : p_idp, 
+    uid : p_idpUid , 
+    email : p_email
+   } )
+  },
+  function(err, res, body){
+   debugger
+   var json = JSON.parse( body );
+   saveUid(p_idp, p_idpUid, json.uid, callback);
+  }
+  );
+
+ }
+
+ function saveUid(p_idp, p_idpUid, p_uid, callback){
+  self.dbUsers.client.set (
+   'idp:'+p_idp+':'+p_idpUid,
+   p_uid,
+   function (err){
+    callback(err, p_uid);
+   }
+   );
+ }
+ 
  // GET /auth/google
  //   Use passport.authenticate() as route middleware to authenticate the
  //   request.  The first step in Google authentication will involve
@@ -36,8 +120,7 @@ function auth (self) {
  //   will redirect the user back to this application at /auth/google/callback
  app.get('/auth/google',
   passport.authenticate('google', {
-   scope: ['https://www.googleapis.com/auth/userinfo.profile',
-   'https://www.googleapis.com/auth/userinfo.email']
+   scope: 'email'
   }),
   function(req, res){
   // The request will be redirected to Google for authentication, so this
@@ -58,10 +141,11 @@ function auth (self) {
   });
 
  app.get('/logout', function(req, res){
-  req.logout();
   req.session.destroy();
+  req.logout();
   res.redirect('/');
  });
+ 
 }
 
 module.exports = auth;

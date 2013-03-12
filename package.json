@@ -6,7 +6,7 @@
  },
  "version": "0.0.3",
  "scripts": {
-  "start": "node app.js"
+  "start": "node src/shopping_app/app/main.js env=nodejitsu"
  },
  "dependencies": {
   "express": "3.1.x",
@@ -23,11 +23,12 @@
   "xtend"		: "1.0.x",
   "request":"x",
   "rabbit.js"	: "0.2.x",
-  "amqp"		: "0.1.x"
-	
+  "amqp"		: "0.1.x",
+  "redis"		: "0.8.2",
+  "connect-redis" : "x"
  },
  "subdomain": "surtich.shopping-list-example",
  "engines": {
-  "node": "0.6.x"
+  "node": "0.8.x"
  }
 }

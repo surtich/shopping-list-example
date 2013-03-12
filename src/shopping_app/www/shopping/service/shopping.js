@@ -1,5 +1,7 @@
 iris.resource(
  function(self) {
+  var mode = "OFFLINE";
+  var order = 0;
   self.shopping = new ShoppingList();
   
   // POST /shopping
@@ -7,10 +9,20 @@ iris.resource(
    if(self.shopping._id){
     success(self.shopping);
    } else {
-    self.post("/shopping", {}, function(ret){
-     self.shopping._id = ret.shopping_id;
-     success(self.shopping);
+    iris.resource(iris.path.service.auth).getUser(function(user) {
+     if (user) {
+      self.post("/shopping", {}, function(ret){
+       mode = "ONLINE";
+       self.shopping._id = ret.shopping_id;
+       success(self.shopping);
+      }, error);  
+     } else {
+      self.shopping._id = "OFFLINE";
+      mode = "OFFLINE";
+      success(self.shopping);
+     }
     }, error);
+    
    }
   };
   
@@ -18,65 +30,96 @@ iris.resource(
   function addShoppingProduct(product, success, error) {
    var shoppingProduct = $.extend({}, product);
    self.getCurrentShopping(function(shopping) {
-    self.post("/shopping/add/" + shopping._id + "/product/" + shoppingProduct._id, {}, function(ret){
-     shoppingProduct.order = ret.order;
+    if (mode === "ONLINE") {
+     self.post("/shopping/add/" + shopping._id + "/product/" + shoppingProduct._id, {}, function(ret){
+      shoppingProduct.order = ret.order;
+      shoppingProduct.purchased = false;
+      success(shoppingProduct);
+     }, error);
+    } else {
+     order++;
+     shoppingProduct.order = order;
      shoppingProduct.purchased = false;
      success(shoppingProduct);
-    }, error); 
+    }
    }, error);
   };
   
   // DELETE /shopping/remove/:shopping_id/product/:product_id
   function removeShoppingProduct(product, success, error) {
    self.getCurrentShopping(function(shopping) {
+    if (mode === "ONLINE") {
     self.del("/shopping/remove/" + shopping._id + "/product/" + product._id, function(ret){
      success();
     }, error); 
+    } else {
+     success();
+    }
    }, error);
   };
   
   // DELETE /shopping/remove/:shopping_id
   function removeAllShoppingProducts(success, error) {
    self.getCurrentShopping(function(shopping) {
+    if (mode === "ONLINE") {
     self.del("/shopping/remove/" + shopping._id, function(ret){
      success();
     }, error); 
+    } else {
+     success();
+    }
    }, error);
   };
   
   // DELETE /shopping/remove/:shopping_id
   function removePurchasedProducts(success, error) {
    self.getCurrentShopping(function(shopping) {
+    if (mode === "ONLINE") {
     self.del("/shopping/remove/purchased/" + shopping._id, function(ret){
      success();
     }, error); 
+    } else {
+     success();
+    }
    }, error);
   };
   
   // PUT /shopping/pruchase/:shopping_id/product/:product_id/purchased/:purchased
   function purchaseShoppingProduct(product, purchase, success, error) {
    self.getCurrentShopping(function(shopping) {
+    if (mode === "ONLINE") {
     self.put("/shopping/purchase/" + shopping._id + "/product/" + product._id + "/purchased/" + purchase, {}, function(ret){
      success();
     }, error); 
+    } else {
+     success();
+    }
    }, error);
   };
   
   // PUT /shopping/purchase/:shopping_id/purchased/:purchased
   function purchaseAllShoppingProducts(purchase, success, error) {
    self.getCurrentShopping(function(shopping) {
+    if (mode === "ONLINE") {
     self.put("/shopping/purchase/" + shopping._id + "/purchased/" + purchase, {}, function(ret){
      success();
     }, error); 
+    } else {
+     success();
+    }
    }, error);
   };
   
   // PUT /shopping/purchase/:shopping_id/purchased/invert
   function invertPurchaseAllShoppingProducts(success, error) {
    self.getCurrentShopping(function(shopping) {
+    if (mode === "ONLINE") {
     self.put("/shopping/purchase/" + shopping._id + "/purchased/invert", {}, function(ret){
      success();
     }, error); 
+    } else {
+     success();
+    }
    }, error);
   };
   
