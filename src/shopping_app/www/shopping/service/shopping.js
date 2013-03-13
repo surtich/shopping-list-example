@@ -4,20 +4,66 @@ iris.resource(
   var order = 0;
   self.shopping = new ShoppingList();
   
+  
+  self.on(iris.evts.user.changed, function() {
+   iris.resource(iris.path.service.auth).getUser(function(user) {
+    if (self.shopping._id == "NO_ID" && user) {
+     self.saveShopping(function(shopping) {
+      self.shopping._id = shopping._id;
+      self.shopping.email = shopping.email;
+      if (user) {
+       mode = "ONLINE";
+      } else {
+       mode = "OFFLINE";
+      }
+     });
+    } else {
+     if (user.email != self.shopping.email) {
+      if (user) {
+       mode = "ONLINE";
+      } else {
+       mode = "OFFLINE";
+      }
+      createShoppingList();
+     }
+    }
+    
+   });
+  });
+  
+  function createShoppingList() {
+   delete self.shopping._id;
+   self.shopping.products = [];
+   delete self.shopping.email;
+   order = 0;
+   self.notify(iris.evts.shopping.listCreated);
+  }
+  
+  // POST /shopping/save
+  self.saveShopping = function (success, error) {
+   self.post("/shopping/save", {
+    products:self.shopping.products
+   }, function(shoppingList){
+    success(shoppingList);
+   });
+  }
+  
   // POST /shopping
   self.getCurrentShopping = function (success, error) {
-   if(self.shopping._id){
+   if(self.shopping && self.shopping._id){
     success(self.shopping);
    } else {
     iris.resource(iris.path.service.auth).getUser(function(user) {
      if (user) {
-      self.post("/shopping", {}, function(ret){
+      self.post("/shopping", {}, function(shopping){
        mode = "ONLINE";
-       self.shopping._id = ret.shopping_id;
+       self.shopping._id = shopping._id;
+       self.shopping.products = shopping.products;
+       self.shopping.email = shopping.email;
        success(self.shopping);
       }, error);  
      } else {
-      self.shopping._id = "OFFLINE";
+      self.shopping._id = "NO_ID";
       mode = "OFFLINE";
       success(self.shopping);
      }
@@ -49,9 +95,9 @@ iris.resource(
   function removeShoppingProduct(product, success, error) {
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
-    self.del("/shopping/remove/" + shopping._id + "/product/" + product._id, function(ret){
-     success();
-    }, error); 
+     self.del("/shopping/remove/" + shopping._id + "/product/" + product._id, function(ret){
+      success();
+     }, error); 
     } else {
      success();
     }
@@ -62,9 +108,9 @@ iris.resource(
   function removeAllShoppingProducts(success, error) {
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
-    self.del("/shopping/remove/" + shopping._id, function(ret){
-     success();
-    }, error); 
+     self.del("/shopping/remove/" + shopping._id, function(ret){
+      success();
+     }, error); 
     } else {
      success();
     }
@@ -75,9 +121,9 @@ iris.resource(
   function removePurchasedProducts(success, error) {
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
-    self.del("/shopping/remove/purchased/" + shopping._id, function(ret){
-     success();
-    }, error); 
+     self.del("/shopping/remove/purchased/" + shopping._id, function(ret){
+      success();
+     }, error); 
     } else {
      success();
     }
@@ -88,9 +134,9 @@ iris.resource(
   function purchaseShoppingProduct(product, purchase, success, error) {
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
-    self.put("/shopping/purchase/" + shopping._id + "/product/" + product._id + "/purchased/" + purchase, {}, function(ret){
-     success();
-    }, error); 
+     self.put("/shopping/purchase/" + shopping._id + "/product/" + product._id + "/purchased/" + purchase, {}, function(ret){
+      success();
+     }, error); 
     } else {
      success();
     }
@@ -101,9 +147,9 @@ iris.resource(
   function purchaseAllShoppingProducts(purchase, success, error) {
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
-    self.put("/shopping/purchase/" + shopping._id + "/purchased/" + purchase, {}, function(ret){
-     success();
-    }, error); 
+     self.put("/shopping/purchase/" + shopping._id + "/purchased/" + purchase, {}, function(ret){
+      success();
+     }, error); 
     } else {
      success();
     }
@@ -114,9 +160,9 @@ iris.resource(
   function invertPurchaseAllShoppingProducts(success, error) {
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
-    self.put("/shopping/purchase/" + shopping._id + "/purchased/invert", {}, function(ret){
-     success();
-    }, error); 
+     self.put("/shopping/purchase/" + shopping._id + "/purchased/invert", {}, function(ret){
+      success();
+     }, error); 
     } else {
      success();
     }
@@ -124,10 +170,14 @@ iris.resource(
   };
   
   
-  function ShoppingList(_id) {
+  function ShoppingList(_id, products) {
    var that = this;
    that._id = _id;
-   that.products = [];
+   if (!products) {
+    that.products = [];
+   } else {
+    that.products = products;
+   }
    
    function _hasProducts(purchased) {
     var found = false;
@@ -224,7 +274,6 @@ iris.resource(
     var sortedShoppingProducts = [];
     var index = 0;
     var posPurchased = 0;
-            
     for (; index < that.products.length; index++) {
      var product = that.products[index];                
      var purchased = product.purchased === true;

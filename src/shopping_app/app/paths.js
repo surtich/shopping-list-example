@@ -9,6 +9,16 @@ exports.paths = [
 		"path": "/api/user",
 		"handler": require("./path/get_user")
 	},
+ {
+		"method" : "GET",
+		"path": "/connected",
+		"handler": require("./path/login")
+	},
+ {
+		"method" : "GET",
+		"path": "/disconnected",
+		"handler": require("./path/logout")
+	},
 	{
 		"method": "GET",
 		"path": "/category",
@@ -27,41 +37,46 @@ exports.paths = [
 	{
 		"method" : "POST",
 		"path": "/shopping",
-		"handler": require("./path/createShoppingList")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/createShoppingList")]
+	},
+	{
+		"method" : "POST",
+		"path": "/shopping/save",
+		"handler": [require("./path/ensureAuthenticated"), require("./path/saveShoppingList")]
 	},
 	{
 		"method" : "POST",
 		"path": "/shopping/add/:shopping_id/product/:product_id",
-		"handler": require("./path/addShoppingProduct")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/addShoppingProduct")]
 	},
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/:shopping_id/product/:product_id",
-		"handler": require("./path/removeShoppingProduct")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removeShoppingProduct")]
 	},
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/:shopping_id",
-		"handler": require("./path/removeAllShoppingProducts")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removeAllShoppingProducts")]
 	},
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/purchased/:shopping_id",
-		"handler": require("./path/removePurchasedProducts")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removePurchasedProducts")]
 	},
 	{
 		"method" : "PUT",
 		"path": "/shopping/purchase/:shopping_id/product/:product_id/purchased/:purchased",
-		"handler": require("./path/purchaseShoppingProduct")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/purchaseShoppingProduct")]
 	},
 	{
 		"method" : "PUT",
 		"path": "/shopping/purchase/:shopping_id/purchased/:purchased",
-		"handler": require("./path/purchaseAllShoppingProducts")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/purchaseAllShoppingProducts")]
 	},
  {
 		"method": "GET",
 		"path": "/shoppings",
-		"handler": require("./path/shoppingsByUser")
+		"handler": [require("./path/ensureAuthenticated"), require("./path/shoppingsByUser")]
 	}
 ]

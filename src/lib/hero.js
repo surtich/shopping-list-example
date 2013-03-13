@@ -145,23 +145,27 @@ hero.worker =  function (f_class){
 
 function registerPath(p_path, p_method, f_handler){
  console.log("REGISTER", p_method, p_path);
+ var fn = null;
  switch(p_method){
   case "GET": {
-   app.get(p_path, f_handler);
+   fn = app.get;
    break;
   }
   case "POST": {
-   app.post(p_path, f_handler);
+   fn = app.post;
    break;
   }
   case "PUT": {
-   app.put(p_path, f_handler);
+   fn = app.put;
    break;
   }
   case "DELETE": {
-   app.delete(p_path, f_handler);
+   fn = app.delete;
    break;
   }
+ }
+ if (fn) {
+  fn.call(app, p_path, f_handler);
  }
 }
 

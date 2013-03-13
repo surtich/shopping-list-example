@@ -10,7 +10,6 @@ hero	= commons.hero,
 app		= hero.app,
 express	= commons.express,
 auth = require('./auth.js'),
-secure = require('./secure.js'),
 RedisStore		= commons.RedisStore;
 
 
@@ -61,7 +60,6 @@ module.exports = hero.worker (
   });
   
   auth(self);
-  secure();
     
   self.ready = function(p_cbk){
    async.parallel (
@@ -196,11 +194,23 @@ module.exports = hero.worker (
     }
    });
   }
+  
+  function checkOwner(shopping_id, email, p_cbk){
+   
+   var find = {
+    _id: ObjectID(String(shopping_id)),
+    email: email
+   };
+
+   colShoppings.find(find).count(function(err, count){
+    p_cbk(err, count > 0);
+   });
+   
+  }
 
   // -----
   // PRODUCTS
   // -----
-
 
   function getAllCategories(p_cbk){
    colCategories.find({}).toArray(function(err, items){
@@ -226,10 +236,30 @@ module.exports = hero.worker (
 
 
   function createShoppingList(email, p_cbk){
+   saveShoppingList([], email, p_cbk);
+  }
+  
+  function saveShoppingList(products, email, p_cbk){
+   
+   var auxProducts = [];
+   var order = 0;
+   for (var i = 0; i< products.length; i++) {
+    var product = products[i];
+    var auxProduct = {};
+    auxProduct.product_id = product._id;
+    auxProduct.product_name = product._name;
+    auxProduct.order = product.order;
+    auxProduct.product_name = product.name;
+    auxProduct.purchased = product.purchased === true;
+    auxProducts.push(auxProduct);
+    if (product.order > order) {
+     order++;
+    }
+   }
    var shoppingList = {
     _id : ObjectID(),
-    products : [],
     email: email,
+    products: auxProducts,
     last_updated: new Date()
    };
 
@@ -239,7 +269,10 @@ module.exports = hero.worker (
     if(err || result.length === 0){
      p_cbk(err, null);
     } else {
-     p_cbk(null, result[0]);
+          
+     getNextSequence(ObjectID(String(result[0]._id)), function(err ,ret) {
+      p_cbk(null, result[0]); 
+     }, order);
     }
    });
   }
@@ -264,10 +297,7 @@ module.exports = hero.worker (
    
   }
   
-  
-    
   function addShoppingProduct(shopping_id, product_id, p_cbk){
-   
    var find = {
     _id: ObjectID(String(shopping_id))
    };
@@ -282,7 +312,7 @@ module.exports = hero.worker (
      err = "Product with _id =" + product_id + " does not exists.";
      p_cbk(err, product);
     } else {
-     getNextSequence(shopping_id, function(err ,ret) {
+     getNextSequence(ObjectID(String(shopping_id)), function(err ,ret) {
       if (!err) {
        var set = {
         $addToSet: {
@@ -512,12 +542,12 @@ module.exports = hero.worker (
   // -----
 
  
-  function getNextSequence(name, p_cbk) {
+  function getNextSequence(name, p_cbk, order) {
    colCounters.findAndModify({
     _id: name
    }, {}, {
     $inc: {
-     seq: 1
+     seq: order !== undefined ? order : 1
     }
    }, {
     "new": true, 
@@ -532,12 +562,14 @@ module.exports = hero.worker (
   self.getUserFromEmail = getUserFromEmail;
   self.createUser = createUser;
   self.setUserIdp = setUserIdp;
+  self.checkOwner = checkOwner;
   self.getAllCategories = getAllCategories;
   self.getProducts = getProducts;
   self.getProduct = getProduct;
   self.purchaseProduct = purchaseProduct;
   self.purchaseAllProducts = purchaseAllProducts;
   self.createShoppingList = createShoppingList;
+  self.saveShoppingList = saveShoppingList;
   self.addShoppingProduct = addShoppingProduct;
   self.removeShoppingProduct = removeShoppingProduct;
   self.removeAllShoppingProducts = removeAllShoppingProducts;

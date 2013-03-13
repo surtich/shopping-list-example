@@ -26,6 +26,12 @@ iris.ui(function(self) {
     self.get("product").prop('checked', false);
    }
   });
+  
+  self.on(iris.evts.shopping.listCreated, function() {   
+   
+    self.get("product").prop('checked', false);
+  });
+  
  };
     
 }, iris.path.ui.product_list_item.js);

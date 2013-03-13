@@ -16,13 +16,11 @@ function auth (self) {
   },
 
   function(accessToken, refreshToken, profile, done) {
-   debugger
    var idp      = 'google';
    var idpUid   = profile.id;
    var idpEmail = profile.emails[0].value;
 
    getUid(idp, idpUid, function (err, uid){
-    debugger
     if(err===null) {
      if ( uid===null) {
       createAccount( idp, idpUid, idpEmail, done);
@@ -47,7 +45,6 @@ function auth (self) {
    done(null, self.user[id]);
   } else {
    self.getUserFromId(id, function(err, user) {
-    debugger
     if (err) {
      done(err, null);
     } else {
@@ -60,10 +57,8 @@ function auth (self) {
  });
  
  function getUid(p_idp, p_idpUid, callback){
-  debugger
   console.log( 'getUid', p_idp, p_idpUid );
   self.dbUsers.client.get('idp:'+p_idp+':'+p_idpUid, function (err, uid) {
-   debugger
    console.log('getUid response', 'idp:'+p_idp+':'+p_idpUid, uid);
    if(err){
     hero.err(err);
@@ -95,7 +90,6 @@ function auth (self) {
    } )
   },
   function(err, res, body){
-   debugger
    var json = JSON.parse( body );
    saveUid(p_idp, p_idpUid, json.uid, callback);
   }

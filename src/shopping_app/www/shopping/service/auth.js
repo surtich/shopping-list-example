@@ -7,11 +7,26 @@ iris.resource(
    currentUser = null;
   }
   
-  self.getUser = function(success, error){
-   if (currentUser) {
+  self.getUser = function(success, error, force){
+   if (currentUser && !force) {
     success(currentUser);
     return;
    }
+   /*
+   if (force) {
+    if (currentUser) {
+     currentUser= null;
+    } else {
+   
+     currentUser = {
+      email:"yo"+new Date()
+     };
+    }
+    success(currentUser);
+    return;
+   }
+   */
+   
    
    iris.ajax({
     url : 'api/user'

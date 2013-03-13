@@ -1,8 +1,9 @@
 var shoppingconf = require('../shoppingconf');
 
 function handler(req, res){
- console.log("POST /shopping");
- shoppingconf.createShoppingList(req.user.email, function(err, shoppingList){
+ debugger
+ console.log("POST /shopping/save");
+ shoppingconf.saveShoppingList(req.body.products, req.user.email, function(err, shoppingList){
   if(err){
    res.send(400, {
     err : 'Error when creating list'

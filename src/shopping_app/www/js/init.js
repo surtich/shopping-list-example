@@ -120,9 +120,13 @@ $(document).ready(
         
   iris.evts = {
    shopping : {
+    listCreated: "shopping_list_created",
     productAdded: "shopping_product_added",
     productRemoved: "shopping_product_removed",
     productPurchased: "shopping_product_purchased"
+   },
+   user : {
+    changed: "user_changed"
    }
   };
         

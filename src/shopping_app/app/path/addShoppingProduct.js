@@ -7,9 +7,10 @@ function handler(req, res){
  var product_id = req.params.product_id;
 
  shoppingconf.addShoppingProduct(shopping_id, product_id, function(err, ret){
+  debugger
   if(err || ret === 0){
    res.send(400, {
-    err : 'not found'
+    err : 'Not Found'
    });
   } else {
    res.send(200, ret);
