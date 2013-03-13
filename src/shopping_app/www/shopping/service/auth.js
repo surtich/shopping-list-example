@@ -3,6 +3,10 @@ iris.resource(
   
   var currentUser = null;
   
+  self.cleanUser = function() {
+   currentUser = null;
+  }
+  
   self.getUser = function(success, error){
    if (currentUser) {
     success(currentUser);

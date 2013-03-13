@@ -45,6 +45,23 @@ iris.screen(
    }
    window.location.href = url;
   }
+  
+  function newWindow(url, name) {
+   var popupWindow = window.open(
+    url,
+    name,'height=500,width=450,left=100,top=100,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes');
+   return popupWindow;
+  }
+  
+  function setUser() {
+   iris.resource(iris.path.service.auth).getUser(function(user) {
+    if (user && user.email) {
+     self.get("login").text(iris.translate("MENU.LOGOUT") + " (" + user.email + ")").data("url", "/logout");
+    } else{
+     self.get("login").text(iris.translate("MENU.LOGIN")).data("url", "/auth/google");
+    }
+   });
+  }
             
             
   iris.translations("es_ES", {    
@@ -87,15 +104,23 @@ iris.screen(
      event.preventDefault();
     }
     );
-   iris.resource(iris.path.service.auth).getUser(function(user) {
-    if (user && user.email) {
-     self.get("login").text(iris.translate("MENU.LOGOUT") + " (" + user.email + ")").attr("href", "/logout");
-    } else{
-     self.get("login").text(iris.translate("MENU.LOGIN")).attr("href", "/auth/google");;
-    }
-   });
+   
    if ( !document.location.hash ) {                
     iris.navigate("#/home"); //Default page
    }
+   
+   self.get("login").click(function(event) {
+    event.preventDefault();
+    var authWin = newWindow($(this).data("url"),"auth");
+    var it = setInterval(function() {
+     if (authWin.closed) {
+      clearInterval(it);
+      iris.resource(iris.path.service.auth).cleanUser();
+      setUser();
+     }
+    }, 200);
+   });
+   
+   setUser();
   };
  } , iris.path.screen.welcome.js);

@@ -12,11 +12,22 @@ function ensureAuthenticated(req, res, next) {
   });
 }
 
+function login(req, res, next) {
+ res.redirect("/auth.html");
+}
+
+function logout(req, res, next) {
+ res.redirect("/auth.html");
+}
+
 module.exports = function() {
  app.all("/shoppings", ensureAuthenticated);
  app.all("/shopping", ensureAuthenticated);
  app.all("/shopping/add*", ensureAuthenticated);
  app.all("/shopping/remove*", ensureAuthenticated);
  app.all("/shopping/purchase*", ensureAuthenticated);
+ 
+ app.get("/connected", login);
+ app.get("/disconnected", logout);
 };
  

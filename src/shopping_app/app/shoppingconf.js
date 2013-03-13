@@ -45,6 +45,13 @@ module.exports = hero.worker (
    app.use(express.methodOverride());
    app.use(passport.initialize());
    app.use(passport.session());
+   /*
+   app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', app.get('url'));
+    res.header('Access-Control-Allow-Credentials', true);
+    next();
+   });
+   */
    app.use(app.router);
    app.use(express.errorHandler({
     dumpExceptions : true,
