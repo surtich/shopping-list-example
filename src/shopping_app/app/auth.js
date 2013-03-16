@@ -114,7 +114,8 @@ function auth (self) {
  //   will redirect the user back to this application at /auth/google/callback
  app.get('/auth/google',
   passport.authenticate('google', {
-   scope: 'email'
+   scope: ['https://www.googleapis.com/auth/userinfo.profile',
+   'https://www.googleapis.com/auth/userinfo.email']
   }),
   function(req, res){
   // The request will be redirected to Google for authentication, so this

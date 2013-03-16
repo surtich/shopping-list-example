@@ -121,6 +121,8 @@ $(document).ready(
   iris.evts = {
    shopping : {
     listCreated: "shopping_list_created",
+    listLoaded: "shopping_list_loaded",
+    listRemoved: "shopping_list_removed",
     productAdded: "shopping_product_added",
     productRemoved: "shopping_product_removed",
     productPurchased: "shopping_product_purchased"

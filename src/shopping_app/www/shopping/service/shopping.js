@@ -24,20 +24,54 @@ iris.resource(
       } else {
        mode = "OFFLINE";
       }
-      createShoppingList();
+      self.createShoppingList();
      }
     }
     
    });
   });
   
-  function createShoppingList() {
+  self.createShoppingList = function() {
    delete self.shopping._id;
    self.shopping.products = [];
    delete self.shopping.email;
    order = 0;
    self.notify(iris.evts.shopping.listCreated);
   }
+  
+  function loadShoppingList(shopping, success) {
+   mode = "ONLINE";
+   self.shopping._id = shopping._id;
+   self.shopping.email = shopping.email;
+   self.shopping.products = shopping.products;
+   for (var i = 0; i < self.shopping.products.length; i++) {
+    self.shopping.products[i].purchased = self.shopping.products[i].purchased % 2 === 0? false: true
+   }
+   success(self.shopping);
+   self.notify(iris.evts.shopping.listLoaded);
+  }
+  
+  // GET /shopping/:shopping_id
+  self.getShoppingList = function(shopping_id, success, error) {
+   self.get("/shopping/" + shopping_id, function(ret){
+    loadShoppingList(ret, success);
+   }, error);
+  };
+  
+  // POST /shopping/clone/:shopping_id
+  self.cloneShoppingList = function(shopping_id, success, error) {
+   self.post("/shopping/clone/" + shopping_id, {}, function(ret){
+    loadShoppingList(ret, success);
+   }, error);
+  };
+  
+  // DELETE /shopping/:shopping_id
+  self.removeShoppingList = function(shopping_id, success, error) {
+   self.del("/shopping/" + shopping_id, function(ret){
+    self.notify(iris.evts.shopping.listRemoved);
+    success();
+   }, error);
+  };
   
   // POST /shopping/save
   self.saveShopping = function (success, error) {
@@ -191,6 +225,28 @@ iris.resource(
     }
     return found;
    }
+   function _getProduct(product_id) {
+    var product = null;
+    var i = 0;
+    while ( product === null && i < that.products.length ) {
+     if (that.products[i]._id === product_id) {
+      product = that.products[i];
+     } else {
+      i++;
+     }
+    }
+    return product;
+   }
+
+   function _numPurchased(purchased) {
+    var num = 0;
+    for (var i = 0; i< that.products.length; i++) {
+     if (that.products[i].purchased === purchased) {
+      num++;
+     }
+    }
+    return num;
+   }
    
    function _addProduct(product, success, error) {
     addShoppingProduct(product, function(shoppingProduct) {
@@ -320,6 +376,13 @@ iris.resource(
   
    ShoppingList.prototype.hasPurchasedProducts = function() {            
     return _hasProducts(true);
+   };
+   ShoppingList.prototype.numProducts = function() {
+    return this.products.length;
+   };
+   ShoppingList.prototype.numPurchased = _numPurchased;
+   ShoppingList.prototype.hasProduct = function(product_id) {            
+    return _getProduct(product_id) !== null;
    };
   }
   

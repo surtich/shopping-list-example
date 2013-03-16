@@ -35,9 +35,19 @@ exports.paths = [
 		"handler": require("./path/productById")
 	},
 	{
+		"method" : "GET",
+		"path": "/shopping/:shopping_id",
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/shoppingById")]
+	},
+	{
 		"method" : "POST",
 		"path": "/shopping",
 		"handler": [require("./path/ensureAuthenticated"), require("./path/createShoppingList")]
+	},
+ {
+		"method" : "POST",
+		"path": "/shopping/clone/:shopping_id",
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/shoppingClone")]
 	},
 	{
 		"method" : "POST",
@@ -48,6 +58,11 @@ exports.paths = [
 		"method" : "POST",
 		"path": "/shopping/add/:shopping_id/product/:product_id",
 		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/addShoppingProduct")]
+	},
+	{
+		"method" : "DELETE",
+		"path": "/shopping/:shopping_id",
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/shoppingRemove")]
 	},
 	{
 		"method" : "DELETE",

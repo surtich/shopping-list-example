@@ -10,32 +10,47 @@ iris.resource(
   self.getUser = function(success, error, force){
    if (currentUser && !force) {
     success(currentUser);
-    return;
+   } else {
+    getUser(success, error)
    }
-   /*
-   if (force) {
-    if (currentUser) {
-     currentUser= null;
-    } else {
-   
-     currentUser = {
-      email:"yo"+new Date()
-     };
-    }
-    success(currentUser);
-    return;
-   }
-   */
-   
-   
+  };
+  
+  
+  function getUser (success, error){
    iris.ajax({
     url : 'api/user'
-   }).done(function(ret){
-    currentUser = ret;
-    success(currentUser);
-   }).fail(function(ret) {
-    error(ret);
+   }).done(function(user){
+    success(user);
+   }).fail(function(user) {
+    error(user);
    });
   };
+  
+  self.newWindow = function(url, name, fnOnClosed, fnAfterOnclosed) {
+   var popupWindow = window.open(
+    url,
+    name,'height=500,width=450,left=100,top=100,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes');
+   var it = setInterval(function() {
+    if (popupWindow.closed) {
+     clearInterval(it);
+     fnOnClosed(fnAfterOnclosed);
+    }
+   }, 200);
+  }
+  
+  self.userChanged = function(fn) {
+   getUser(function(user) {
+    if (user !== currentUser) {
+     currentUser = user;
+     iris.notify(iris.evts.user.changed, currentUser);
+     iris.navigate("#/home");
+    }
+    if (fn) {
+     fn();
+    }
+   }, function(){
+    
+    }, true);
+  }
  },
  iris.path.service.auth);

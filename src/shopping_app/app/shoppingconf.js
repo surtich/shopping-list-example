@@ -196,7 +196,6 @@ module.exports = hero.worker (
   }
   
   function checkOwner(shopping_id, email, p_cbk){
-   
    var find = {
     _id: ObjectID(String(shopping_id)),
     email: email
@@ -239,19 +238,19 @@ module.exports = hero.worker (
    saveShoppingList([], email, p_cbk);
   }
   
+  function cloneShoppingList(shopping_id, p_cbk, error) {
+   getShoppingList(shopping_id, function(error, shopping) {
+    saveShoppingList(shopping.products, shopping.email, p_cbk);
+   });
+  }
+  
   function saveShoppingList(products, email, p_cbk){
    
-   var auxProducts = [];
    var order = 0;
    for (var i = 0; i< products.length; i++) {
     var product = products[i];
-    var auxProduct = {};
-    auxProduct.product_id = product._id;
-    auxProduct.product_name = product._name;
-    auxProduct.order = product.order;
-    auxProduct.product_name = product.name;
-    auxProduct.purchased = product.purchased === true;
-    auxProducts.push(auxProduct);
+    product._id = parseInt(product._id, 10);
+    product.purchased = product.purchased === "true" ? 1 : 0;
     if (product.order > order) {
      order++;
     }
@@ -259,7 +258,7 @@ module.exports = hero.worker (
    var shoppingList = {
     _id : ObjectID(),
     email: email,
-    products: auxProducts,
+    products: products,
     last_updated: new Date()
    };
 
@@ -317,9 +316,9 @@ module.exports = hero.worker (
        var set = {
         $addToSet: {
          'products': {
-          'product_id': parseInt(product_id, 10),
+          '_id': parseInt(product_id, 10),
           'order': ret.seq,
-          'product_name': product.name,
+          'name': product.name,
           'purchased': 0
          }
         },
@@ -354,7 +353,7 @@ module.exports = hero.worker (
      var remove = {
       $pull: {
        'products': {
-        'product_id': parseInt(product_id, 10)
+        '_id': parseInt(product_id, 10)
        }
       },
       $set:{
@@ -368,7 +367,6 @@ module.exports = hero.worker (
      });
     }
    });
-   
   }
   
   function removeAllShoppingProducts(shopping_id, p_cbk){
@@ -402,7 +400,7 @@ module.exports = hero.worker (
    
    var find = {
     _id: ObjectID(String(shopping_id)),    
-    "products.product_id": parseInt(product_id, 10)
+    "products._id": parseInt(product_id, 10)
    };
    
    var set = {
@@ -415,6 +413,7 @@ module.exports = hero.worker (
    colShoppings.update(find, set, {
     w: 1
    }, function(err, res){
+    console.log("res="+res)
     p_cbk(err, res);
    });
   }
@@ -489,7 +488,7 @@ module.exports = hero.worker (
     function invertPurchase(product, callback) {
      find = {
       _id: ObjectID(String(shopping_id)),
-      "products.product_id": product.product_id
+      "products._id": product._id
      };
      
      colShoppings.update(find, inc, {
@@ -528,12 +527,68 @@ module.exports = hero.worker (
    
   }
   
-  function getShoppings(p_cbk){
-   colShoppings.find({}).toArray(function(err, items){
-    if(!err){
-     p_cbk(items);
+  function getShoppingsByUser(email, p_cbk){
+   
+   var map = function() {
+    var products = 0;
+    var purchased = 0;
+    for (var idx = 0; idx < this.products.length; idx++) {
+     if (this.products[idx].purchased % 2 !== 0) {
+      purchased++;
+     }
+     products++;
     }
+    emit(this._id, {
+     last_updated: this.last_updated,
+     products: products,
+     purchased: purchased
+    });
+   }
+   
+   var reduce = function(k, value) {
+    return value;
+   };
+   
+   colShoppings.mapReduce(
+    map,
+    reduce,
+    {
+     out : {
+      inline: 1
+     },
+     query: {
+      email: email
+     }
+    }, function (err, results, stats) {
+     if (err) {
+      throw err;
+     }
+     p_cbk(results);
+    }
+    );
+  }
+  
+  function getShoppingList(shopping_id, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+   
+   colShoppings.findOne(find, function(err, res){
+    p_cbk(err, res);
    });
+   
+  }
+  
+  function removeShoppingList(shopping_id, p_cbk){
+   
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+   
+   colShoppings.remove(find, {w: 1}, function(err, res){
+    p_cbk(err, res);
+   });
+   
   }
 
 
@@ -574,6 +629,9 @@ module.exports = hero.worker (
   self.removeShoppingProduct = removeShoppingProduct;
   self.removeAllShoppingProducts = removeAllShoppingProducts;
   self.removePurchasedProducts = removePurchasedProducts;
-  self.getShoppings = getShoppings;
+  self.getShoppingsByUser = getShoppingsByUser;
+  self.getShoppingList = getShoppingList;
+  self.removeShoppingList = removeShoppingList;
+  self.cloneShoppingList = cloneShoppingList;
  }
  );

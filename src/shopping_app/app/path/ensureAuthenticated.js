@@ -4,7 +4,7 @@ function handler(req, res, next) {
  }
  //res.redirect('/auth/google');
  res.send(200, {
-  redirect : "/auth/google"
+  popup_login : "/auth/google"
  });
 }
 

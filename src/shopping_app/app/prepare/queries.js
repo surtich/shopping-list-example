@@ -58,3 +58,62 @@ reduce = function(key, values) {
  };
 }
 
+
+
+db.shoppings.aggregate(
+{
+ $unwind : "$products"
+},
+{
+ $group :
+
+ {
+  "_id" :  {
+   id:"$_id", 
+   last_updated : "$last_updated"
+  },
+  number: {
+   $sum: 1
+  }
+ }
+});
+
+db.shoppings.aggregate(
+{
+ $project : {
+  _id : 1,
+  products: {
+   "products.purchased": 1
+  }
+ }
+}
+);
+
+var map = function() {
+ var products = 0;
+ var purchased = 0;
+ for (var idx = 0; idx < this.products.length; idx++) {
+  if (this.products[idx].purchased % 2 !== 0) {
+   purchased++;
+  }
+  products++;
+ }
+ emit(this._id, {
+  products: products,
+  purchased: purchased
+ });
+}
+
+var reduce = function(k, value) {
+ return value;
+};
+
+db.shoppings.mapReduce(
+ map,
+ reduce,
+ {
+  out : {
+   inline: 1
+  }
+ }
+ );

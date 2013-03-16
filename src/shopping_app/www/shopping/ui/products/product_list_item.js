@@ -12,8 +12,8 @@ iris.ui(function(self) {
     iris.resource(iris.path.service.shopping).shopping.removeShoppingProduct(product, function() {
     });
    } 
-            
   });
+  self.get("product").prop('checked', iris.resource(iris.path.service.shopping).shopping.hasProduct(product._id));
   
   self.on(iris.evts.shopping.productAdded, function(productAdded) {
    if (productAdded._id === product._id) {
@@ -30,6 +30,10 @@ iris.ui(function(self) {
   self.on(iris.evts.shopping.listCreated, function() {   
    
     self.get("product").prop('checked', false);
+  });
+  
+  self.on(iris.evts.shopping.listLoaded, function() {   
+    self.get("product").prop('checked', iris.resource(iris.path.service.shopping).shopping.hasProduct(product._id));
   });
   
  };
