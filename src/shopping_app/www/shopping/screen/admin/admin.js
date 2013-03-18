@@ -14,7 +14,8 @@ iris.screen(
      "lastUpdated": iris.resource(iris.path.service.shopping).shopping._id,
      "actual": true,
      "numProducts": iris.resource(iris.path.service.shopping).shopping.numProducts(),
-     "numPurchased": iris.resource(iris.path.service.shopping).shopping.numPurchased(true)
+     "numPurchased": iris.resource(iris.path.service.shopping).shopping.numPurchased(true),
+     "state": "owner"
     },
     createNew: _newList
    },self.PREPEND);
@@ -32,7 +33,9 @@ iris.screen(
      
      list.numProducts = list.value.hasOwnProperty("products") ? list.value.products : 0;
      list.numPurchased = list.value.hasOwnProperty("purchased") ? list.value.purchased : 0;
+     list.owner = list.value.hasOwnProperty("owner") ? list.value.owner : "";
      list.lastUpdated = list.value.hasOwnProperty("last_updated") ? iris.date(new Date(list.value.last_updated), "H:i:s d/m/Y"): "";
+     list.state = list.value.hasOwnProperty("state") ? list.value.state: "owner";
      self.ui("list_container", iris.path.ui.list.js, {
       "list": list,
       removeUI: _removeUI
@@ -77,23 +80,31 @@ iris.screen(
   iris.translations("es_ES", {                
    ACTIONS: {
     CREATE_NEW: "Clonar",
+    CLONE: "Clonar",
     SAVE: "Guardar",
     REMOVE: "Eliminar",
     UPDATE: "Actualizar",
-    LOAD: "Cargar"
+    LOAD: "Cargar",
+    COLLABORATORS: "Colaboradores"
    },
-   UPDATED: "Última grabación"
+   UPDATED: "Última grabación",
+   COLLABORATOR: "Colaborador",
+   OWNER: "Propietario"
   });
             
   iris.translations("en_US", {          
    ACTIONS: {
     CREATE_NEW: "Clone",
+    CLONE: "Clone",
     SAVE: "Save",
     REMOVE: "Remove",
     UPDATE: "Update",
-    LOAD: "Load"
+    LOAD: "Load",
+    COLLABORATORS: "Collaborators"
    },
-   UPDATED: "Last updated"
+   UPDATED: "Last updated",
+   COLLABORATOR: "Collaborator",
+   OWNER: "Owner"
   });
 
  }, iris.path.screen.admin.js);

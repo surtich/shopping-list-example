@@ -37,7 +37,7 @@ exports.paths = [
 	{
 		"method" : "GET",
 		"path": "/shopping/:shopping_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/shoppingById")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/shoppingById")]
 	},
 	{
 		"method" : "POST",
@@ -47,7 +47,7 @@ exports.paths = [
  {
 		"method" : "POST",
 		"path": "/shopping/clone/:shopping_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/shoppingClone")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/shoppingClone")]
 	},
 	{
 		"method" : "POST",
@@ -57,7 +57,7 @@ exports.paths = [
 	{
 		"method" : "POST",
 		"path": "/shopping/add/:shopping_id/product/:product_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/addShoppingProduct")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/addShoppingProduct")]
 	},
 	{
 		"method" : "DELETE",
@@ -67,31 +67,56 @@ exports.paths = [
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/:shopping_id/product/:product_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removeShoppingProduct")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/removeShoppingProduct")]
 	},
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/:shopping_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removeAllShoppingProducts")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/removeAllShoppingProducts")]
 	},
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/purchased/:shopping_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removePurchasedProducts")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/removePurchasedProducts")]
 	},
 	{
 		"method" : "PUT",
 		"path": "/shopping/purchase/:shopping_id/product/:product_id/purchased/:purchased",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/purchaseShoppingProduct")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/purchaseShoppingProduct")]
 	},
 	{
 		"method" : "PUT",
 		"path": "/shopping/purchase/:shopping_id/purchased/:purchased",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/purchaseAllShoppingProducts")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/purchaseAllShoppingProducts")]
 	},
  {
 		"method": "GET",
 		"path": "/shoppings",
 		"handler": [require("./path/ensureAuthenticated"), require("./path/shoppingsByUser")]
+	},
+	{
+		"method" : "POST",
+		"path": "/shopping/add/:shopping_id/collaborator/:email",
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/addShoppingCollaborator")]
+	},
+	{
+		"method" : "PUT",
+		"path": "/shopping/accept/:shopping_id/collaborator/:email",
+		"handler": [require("./path/isShoppingCollaborator"), require("./path/acceptShoppingCollaborator")]
+	},
+	{
+		"method" : "PUT",
+		"path": "/shopping/reject/:shopping_id/collaborator/:email",
+		"handler": [require("./path/isShoppingCollaborator"), require("./path/rejectShoppingCollaborator")]
+	},
+	{
+		"method" : "DELETE",
+		"path": "/shopping/remove/:shopping_id/collaborator/:email",
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removeShoppingCollaborator")]
+	},
+	{
+		"method" : "GET",
+		"path": "/shopping/collaborators/:shopping_id",
+		"handler": [require("./path/shoppingCollaborators")]
 	}
 ]

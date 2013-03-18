@@ -29,25 +29,27 @@ iris.screen(
     ["home", iris.path.screen.home.js],
     ["categories", iris.path.screen.categories.js],
     ["shopping", iris.path.screen.shopping.js],
-    ["admin", iris.path.screen.admin.js]
+    ["admin", iris.path.screen.admin.js],
+    ["collaborators", iris.path.screen.collaborators.js]
     ]);
   }
         
   function _changeLang(link) {
    var regExp = /[?&]lang=[a-z][a-z][\-_][A-Z][A-Z]/;
-   var lang = window.location.href.match(regExp);
+   var origin = window.location.origin;
    var url = window.location.href;
    var hash = window.location.hash;
+   var params = url.substr(0, url.indexOf(hash))
+   params = params.substr(origin.length + 1);
+   var lang = params.match(regExp);
    if ( lang === null) {
     lang = "lang=" + link.data("lang");
-    if (window.location.href.match(/[?]/)) {
+    if (params.match(/[?]/)) {
      lang = "&" + lang;                            
     } else {
      lang = "?" + lang;
     }
-    url = url.substr(0, url.indexOf(hash));
-    url += lang;
-    url += hash;
+    url = origin + "/" + params + lang + hash;
    } else {
     var first = lang[0].substr(0,6);
     url = window.location.href.replace(regExp, first + link.data("lang"));                       

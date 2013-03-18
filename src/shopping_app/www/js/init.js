@@ -11,7 +11,8 @@ $(document).ready(
    }
   }
             
-  iris.translations("es_ES", {                
+  iris.translations("es_ES", {
+   BACK: "Volver",
    ERROR: "Se ha producido el siguiente error",
    JQUERY : {
     DATATABLES: {
@@ -24,7 +25,8 @@ $(document).ready(
             
   });
             
-  iris.translations("en_US", {                
+  iris.translations("en_US", {
+   BACK: "Back",                
    ERROR: "There was an error",
    JQUERY : {
     DATATABLES: {
@@ -89,6 +91,10 @@ $(document).ready(
     shopping: {
      js: "/shopping/screen/list/shopping.js", 
      html: "/shopping/screen/list/shopping.html"
+    },
+    collaborators: {
+     js: "/shopping/screen/collaborators/collaborators.js", 
+     html: "/shopping/screen/collaborators/collaborators.html"
     }
    },
    ui: {
@@ -107,6 +113,10 @@ $(document).ready(
     list: {
      js: "/shopping/ui/admin/list.js", 
      html: "/shopping/ui/admin/list.html"
+    },
+    collaborator: {
+     js: "/shopping/ui/collaborators/collaborator.js", 
+     html: "/shopping/ui/collaborators/collaborator.html"
     }
    },
    service: {
@@ -114,7 +124,8 @@ $(document).ready(
     products: "/shopping/service/products.js",
     shopping: "/shopping/service/shopping.js",
     shoppingLists: "/shopping/service/shoppingLists.js",
-    auth: "/shopping/service/auth.js"
+    auth: "/shopping/service/auth.js",
+    collaborators: "/shopping/service/collaborators.js"
    }
   };
         

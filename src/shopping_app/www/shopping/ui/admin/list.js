@@ -5,24 +5,37 @@ iris.ui(function(self) {
   if (list.actual) {
    if (!list._id) {
     self.get("btn_create").hide();
-    self.get("btn_remove").hide();
    } else {
     self.get("btn_create").html("<i class=\"icon-folder-open icon-white\"></i>" + iris.translate("ACTIONS.CREATE_NEW")).show();
-    self.get("btn_remove").show();
    }
    self.get("btn_load").hide();
   } else {
    self.get("btn_create").hide();
-   self.get("btn_load").show();
+   self.get("btn_load").toggle(list.state === "owner" || list.state === "accepted");
+  }
+  
+  if (!list._id || list.state !== "owner") {
+   self.get("btn_remove").hide();
   }
         
+        
   self.get("actual").toggle(list.actual);
+  if (list.state !== "owner") {
+  } else {
+   self.get("collaborator").text(iris.translate("OWNER"));
+  }
   //self.get("btn_save").toggleClass("disabled", model.shoppingList.getUpdated()).prop("disabled", model.shoppingList.getUpdated());
   var lastUpdated = list.lastUpdated;
   if (lastUpdated) {
    self.get("last_updated").text(iris.translate("UPDATED") + ": " + lastUpdated);
+   self.get("btn_collaborate").click(function() {
+    iris.navigate("#/collaborators?shopping=" + list._id + "&owner=" + list.owner);
+   });
+  } else {
+   self.get("btn_collaborate").hide();
   }
-        
+  
+  
   var proportion = 0;
   if (list.numProducts > 0) {
    proportion = 100 * list.numPurchased / list.numProducts;

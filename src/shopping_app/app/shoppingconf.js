@@ -238,9 +238,9 @@ module.exports = hero.worker (
    saveShoppingList([], email, p_cbk);
   }
   
-  function cloneShoppingList(shopping_id, p_cbk, error) {
+  function cloneShoppingList(shopping_id, email, p_cbk, error) {
    getShoppingList(shopping_id, function(error, shopping) {
-    saveShoppingList(shopping.products, shopping.email, p_cbk);
+    saveShoppingList(shopping.products, email, p_cbk);
    });
   }
   
@@ -259,6 +259,7 @@ module.exports = hero.worker (
     _id : ObjectID(),
     email: email,
     products: products,
+    collaborators: [],
     last_updated: new Date()
    };
 
@@ -413,7 +414,6 @@ module.exports = hero.worker (
    colShoppings.update(find, set, {
     w: 1
    }, function(err, res){
-    console.log("res="+res)
     p_cbk(err, res);
    });
   }
@@ -532,16 +532,31 @@ module.exports = hero.worker (
    var map = function() {
     var products = 0;
     var purchased = 0;
-    for (var idx = 0; idx < this.products.length; idx++) {
+    var idx = 0;
+    for (idx = 0; idx < this.products.length; idx++) {
      if (this.products[idx].purchased % 2 !== 0) {
       purchased++;
      }
      products++;
     }
+    
+    var state = "owner";
+    
+    for (idx = 0; idx < this.collaborators.length; idx++) {
+     if (this.collaborators[idx].email === email) {
+      state = this.collaborators[idx].state;
+      break;
+     }
+     
+     
+    }
+    
     emit(this._id, {
      last_updated: this.last_updated,
      products: products,
-     purchased: purchased
+     purchased: purchased,
+     owner: this.email,
+     state: state
     });
    }
    
@@ -557,7 +572,13 @@ module.exports = hero.worker (
       inline: 1
      },
      query: {
-      email: email
+      $or: [
+       {"email": email},
+       {"collaborators": { "$elemMatch": {"email": email, state:{ $ne: "rejected"}}}}
+      ]
+     },
+     scope: {
+      "email": email
      }
     }, function (err, results, stats) {
      if (err) {
@@ -579,18 +600,119 @@ module.exports = hero.worker (
    
   }
   
+  function getShoppingCollaborators(shopping_id, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+   
+   
+   var projection = {
+    collaborators: 1,
+    _id: 0
+   };
+   
+   
+   colShoppings.findOne(find, {fields: projection}, function(err, res){
+    p_cbk(err, res);
+   });
+   
+  }
+  
   function removeShoppingList(shopping_id, p_cbk){
    
    var find = {
     _id: ObjectID(String(shopping_id))
    };
    
-   colShoppings.remove(find, {w: 1}, function(err, res){
+   colShoppings.remove(find, {
+    w: 1
+   }, function(err, res){
     p_cbk(err, res);
    });
    
   }
-
+  
+  function addShoppingCollaborator(shopping_id, email, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+   
+   var set = {
+    $addToSet: {
+     'collaborators': {
+      'email': email,
+      'state': 'pending'
+     }
+    }
+   };
+   colShoppings.update(find, set, {
+    w: 1
+   }, function(err, res){
+    p_cbk(err, res);
+   });
+  }
+  
+  
+  function changeStateCollaborator(shopping_id, email, state, p_cbk) {
+   var find = {
+    _id: ObjectID(String(shopping_id)),    
+    "collaborators.email": email
+   };
+   
+   var set = {
+    $set: {
+     "collaborators.$.state": state
+    }
+   };
+   
+   colShoppings.update(find, set, {
+    w: 1
+   }, function(err, res){
+    p_cbk(err, res);
+   });
+  }
+  
+  function removeShoppingCollaborator(shopping_id, email, p_cbk){
+   
+   var find = {
+    _id: ObjectID(String(shopping_id))
+   };
+   var remove = {
+    $pull: {
+     'collaborators': {
+      'email': email
+     }
+    }
+   };
+   colShoppings.update(find, remove, {
+    w: 1
+   }, function(err, res){
+    p_cbk(err, res);
+   });
+  }
+  
+  function isCollaborator(shopping_id, email, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id)),    
+    "collaborators.email": email
+   };
+   
+   colShoppings.findOne(find, function(err, item){
+    p_cbk(err, item !== null);
+   });
+  }
+  
+  function isAcceptedCollaborator(shopping_id, email, p_cbk){
+   var find = {
+    _id: ObjectID(String(shopping_id)),    
+    "collaborators": { "$elemMatch": {"email": email, state: "accepted"}}
+   };
+   
+   colShoppings.findOne(find, function(err, item){
+    p_cbk(err, item !== null);
+   });
+  }
+  
 
   // -----
   // UTILS
@@ -633,5 +755,16 @@ module.exports = hero.worker (
   self.getShoppingList = getShoppingList;
   self.removeShoppingList = removeShoppingList;
   self.cloneShoppingList = cloneShoppingList;
+  self.addShoppingCollaborator = addShoppingCollaborator;
+  self.acceptCollaborator = function (shopping_id, email, p_cbk) {
+   changeStateCollaborator(shopping_id, email, "accepted", p_cbk)
+  };
+  self.rejectCollaborator = function (shopping_id, email, p_cbk) {
+   changeStateCollaborator(shopping_id, email, "rejected", p_cbk)
+  };
+  self.removeShoppingCollaborator = removeShoppingCollaborator;
+  self.getShoppingCollaborators = getShoppingCollaborators;
+  self.isCollaborator = isCollaborator;
+  self.isAcceptedCollaborator = isAcceptedCollaborator;
  }
  );

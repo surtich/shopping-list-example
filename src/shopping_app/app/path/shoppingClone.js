@@ -3,7 +3,7 @@ var shoppingconf = require('../shoppingconf');
 function handler(req, res, next){
  console.log("POST /shopping/clone/:shopping_id");
 
- shoppingconf.cloneShoppingList(req.params.shopping_id, function(err, shoppingList){
+ shoppingconf.cloneShoppingList(req.params.shopping_id, req.user.email, function(err, shoppingList){
   if(err){
    res.send(400, {
     err : 'Error when cloning list'

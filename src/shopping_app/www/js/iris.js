@@ -1,5 +1,5 @@
-/*! Iris - v0.5.0-SNAPSHOT - 2013-02-05
-* http://iris-js.github.com/iris
+/*! Iris - v0.5.0 - 2013-03-18
+* http://thegameofcode.github.com/iris
 * Copyright (c) 2013 Iris; Licensed New-BSD */
 
 
@@ -109,15 +109,11 @@ window.iris = iris;
     eventPrototype.off = function (p_eventName, f_func){
         var callbacks = this.events[p_eventName];
         if ( callbacks ) {
-         if (f_func !== undefined) {
             var index = _indexOf(f_func, callbacks);
 
             if ( index !== -1 ) {
                 callbacks.splice(index, 1);
             }
-         } else {
-           delete this.events[p_eventName];
-         }
         }
     };
 
@@ -259,39 +255,34 @@ window.iris = iris;
 
     function _loadTranslations(p_locale, p_uri, p_settings) {
         
-        if (p_uri.indexOf("http") !== 0) {
-            p_uri = iris.baseUri() + p_uri;
-        }
-        
         iris.log("[translations]", p_locale, p_uri);
 
         var ajaxSettings = {
             url: p_uri,
             dataType: "json",
             async: false,
-            cache: iris.cache(),
-            success: function _loadTranslationsSuccess(p_data) {
-                _addTranslations(p_locale, p_data);
-                iris.log("[translations]", p_data);
-
-                if(p_settings && p_settings.hasOwnProperty("success")) {
-                    p_settings.success(p_locale);
-                }
-            },
-            error: function(p_err) {
-                if(p_settings && p_settings.hasOwnProperty("error")) {
-                    p_settings.error(p_locale);
-                }
-                throw "Error " + p_err.status + " loading lang file[" + p_uri + "]";
-            }
+            cache: iris.cache()
         };
-
 
         if(iris.cache() && iris.cacheVersion()) {
             ajaxSettings.data = "_=" + iris.cacheVersion();
         }
 
-        iris.ajax(ajaxSettings);
+        iris.ajax(ajaxSettings)
+        .done(function (p_data) {
+            _addTranslations(p_locale, p_data);
+            iris.log("[translations]", p_data);
+
+            if(p_settings && p_settings.hasOwnProperty("success")) {
+                p_settings.success(p_locale);
+            }
+        })
+        .fail(function(p_err) {
+            if(p_settings && p_settings.hasOwnProperty("error")) {
+                p_settings.error(p_locale);
+            }
+            throw "Error " + p_err.status + " loading lang file[" + p_uri + "]";
+        });
     }
 
 
@@ -668,13 +659,20 @@ window.iris = iris;
                     })
                     .done(_templateLoaded);
                 } else {
-                    script= document.createElement('script');
-                    script.type= 'text/javascript';
-                    script.src= path;
+                    script = document.createElement("script");
+                    script.type = "text/javascript";
+                    script.src = path;
                     script.onload = _checkLoadFinish;
+                    script.onreadystatechange = onReadyStateChange;
                     _head.appendChild(script);
                 }
             }
+        }
+    }
+
+    function onReadyStateChange () {
+        if ( this.readyState === "loaded" ) {
+            _checkLoadFinish();
         }
     }
 
@@ -961,7 +959,7 @@ window.iris = iris;
             // if url=http://example.com/#, the document.location.hash="" empty string
             // check if current screen is welcome screen (hash !== "")
             // check if the current hash belongs to the path to delete
-            if ( (hash !== "") && (p_screenPath.indexOf(hash) === 0 || hash.indexOf(p_screenPath) === 0) ) {
+            if ( hash !== "#" && hash !== "" && (p_screenPath.indexOf(hash) === 0 || hash.indexOf(p_screenPath) === 0) ) {
                 throw "Cannot delete the current screen or its parents";
             }
 
