@@ -57,18 +57,18 @@ iris.screen(
   self.awake = function () {
    self.destroyUIs("list_container");
    iris.resource(iris.path.service.shoppingLists).getByUser(function(lists) {
-    if (lists && lists.popup_login) {
-     iris.resource(iris.path.service.auth).newWindow(lists.popup_login, "auth", iris.resource(iris.path.service.auth).userChanged);
-     return;
-    }
-    lists.sort(function (list1, list2) {
-     if (list1.value.hasOwnProperty("last_updated") && list2.value.hasOwnProperty("last_updated")) {
-      return new Date(list2.value.last_updated) - new Date(list1.value.last_updated);
-     } else {
-      return 0;
+    if (Array.isArray(lists)) {
+     lists.sort(function (list1, list2) {
+      if (list1.value.hasOwnProperty("last_updated") && list2.value.hasOwnProperty("last_updated")) {
+       return new Date(list2.value.last_updated) - new Date(list1.value.last_updated);
+      } else {
+       return 0;
+      }
      }
-    });
-    _inflate(lists);
+     );
+     _inflate(lists);
+    }
+   
     
    }, function(p_request, p_textStatus, p_errorThrown) {
     throw p_textStatus;

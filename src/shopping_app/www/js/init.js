@@ -98,6 +98,10 @@ $(document).ready(
     }
    },
    ui: {
+    modal: {
+     js: "/shopping/ui/modal.js", 
+     html: "/shopping/ui/modal.html"
+    },
     category_list_item: {
      js: "/shopping/ui/products/category_list_item.js", 
      html: "/shopping/ui/products/category_list_item.html"

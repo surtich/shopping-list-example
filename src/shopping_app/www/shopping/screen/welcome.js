@@ -2,23 +2,34 @@ iris.screen(
 
  function (self) {	
   var user = null;
+  var modal = null;
  
   function _ajaxPrepare() {
    $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {            
     //self.get("screens").hide();
-    self.get("loading").show();                
-    jqXHR.always(function(data) {
-     if(data) {
+    self.get("loading").show(); 
+    jqXHR.always(function(data, rdo) {
+     self.get("loading").hide();
+     if (rdo === "error") {
+      modal.get('div_modal').modal('show');
+      modal.get('header').text(iris.translate("ERROR"));
+      var text = "Error " + data.status;
+      if (data.responseText) {
+       try {
+        text += " " + JSON.parse(data.responseText).err;
+       } catch(e) {
+        text = " " + data.responseText;
+       }
+       self.get("text").html(text);
+      }
+     } else if(data) {
       if(data.redirect) {
        window.location.href = data.redirect;
        return;
-      } else {
-       self.get("loading").hide();
+      } else if (data.popup_login) {
+       iris.resource(iris.path.service.auth).newWindow(data.popup_login, "auth", iris.resource(iris.path.service.auth).userChanged);
       }
-     } else {
-      self.get("loading").hide();
-     } 
-     
+     }
     //self.get("screens").show();
     });            
    });                
@@ -70,6 +81,8 @@ iris.screen(
             
   iris.translations("es_ES", {    
    LOADING: "Cargando...",
+   ERROR: "Se ha producido un error",
+   OK: "Aceptar",
    MENU: {
     WELCOME: "Ejemplo de lista de la compra",
     HOME: "Incio",
@@ -83,6 +96,8 @@ iris.screen(
             
   iris.translations("en_US", {
    LOADING: "Loading...",
+   ERROR: "There is an error",
+   OK: "Accept",
    MENU: {
     WELCOME: "Shopping List Example",
     HOME: "Home",
@@ -97,6 +112,8 @@ iris.screen(
   self.create = function () {
             
    self.tmpl(iris.path.screen.welcome.html);
+   
+   modal = self.ui("modal", iris.path.ui.modal.js);
             
    _ajaxPrepare();
             
