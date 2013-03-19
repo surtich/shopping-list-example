@@ -25,7 +25,8 @@
   "rabbit.js"	: "0.2.x",
   "amqp"		: "0.1.x",
   "redis"		: "0.8.2",
-  "connect-redis" : "x"
+  "connect-redis" : "x",
+  "socket.io": "0.9.x"
  },
  "subdomain": "surtich.shopping-list-example",
  "engines": {
