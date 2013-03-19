@@ -21,6 +21,7 @@ function auth (self) {
    var idpEmail = profile.emails[0].value;
 
    getUid(idp, idpUid, function (err, uid){
+    debugger
     if(err===null) {
      if ( uid===null) {
       createAccount( idp, idpUid, idpEmail, done);
@@ -59,6 +60,7 @@ function auth (self) {
  function getUid(p_idp, p_idpUid, callback){
   console.log( 'getUid', p_idp, p_idpUid );
   self.dbUsers.client.get('idp:'+p_idp+':'+p_idpUid, function (err, uid) {
+   debugger
    console.log('getUid response', 'idp:'+p_idp+':'+p_idpUid, uid);
    if(err){
     hero.err(err);

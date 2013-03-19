@@ -98,7 +98,14 @@ function db(p_config){
      break;
     case hero.dbType.REDIS :
      self.client = redis.createClient(p_config.port, p_config.host, p_config.params);
-     f_callback(null, self.client);
+     if (p_config.pass) {
+      self.client.auth(p_config.pass, function(err) {
+       if (err) throw err;
+      });
+     }
+     self.client.on("ready", function() {
+      f_callback(null, self.client);
+     });
      break;
     default:
      hero.error('database "'+p_type+'" is not supported');

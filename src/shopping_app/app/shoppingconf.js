@@ -34,6 +34,7 @@ module.exports = hero.worker (
   var dbShopping = self.db('shopping', self.config.app.db.shopping_conf);
   var dbSession = self.db('session', self.config.app.db.session);
   var dbUsers = self.db('user', self.config.app.db.user_config);
+  
   self.dbUsers = dbUsers;
   
   var colCounters, colUsers, colCategories, colProducts, colShoppings;
@@ -50,6 +51,7 @@ module.exports = hero.worker (
     store: new RedisStore({
      host: self.config.app.db.session.host, 
      port: self.config.app.db.session.port, 
+     pass: self.config.app.db.session.pass, 
      client: dbSession.client
     })
    }));
@@ -95,7 +97,8 @@ module.exports = hero.worker (
     },
     // socket.io
     function(done){
-     var RedisStore = require('socket.io/lib/stores/redis')
+  /*
+    var RedisStore = require('socket.io/lib/stores/redis')
      , redis  = require('socket.io/node_modules/redis')
      , pub    = redis.createClient()
      , sub    = redis.createClient()
@@ -106,7 +109,7 @@ module.exports = hero.worker (
       redisSub : sub, 
       redisClient : client
      }));
-
+*/
      app.io.sockets.on('connection', function (socket) {
       
       socket.on('login', function(email) {
