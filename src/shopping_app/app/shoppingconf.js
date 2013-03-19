@@ -97,7 +97,7 @@ module.exports = hero.worker (
     },
     // socket.io
     function(done){
-  /*
+     /*
     var RedisStore = require('socket.io/lib/stores/redis')
      , redis  = require('socket.io/node_modules/redis')
      , pub    = redis.createClient()
@@ -110,6 +110,11 @@ module.exports = hero.worker (
       redisClient : client
      }));
 */
+     app.io.configure(function () { 
+      io.set("transports", ["xhr-polling"]); 
+      io.set("polling duration", 10); 
+     });
+
      app.io.sockets.on('connection', function (socket) {
       
       socket.on('login', function(email) {
