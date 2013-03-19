@@ -41,7 +41,6 @@ iris.ui(function(self) {
    iris.resource(iris.path.service.collaborators).acceptCollaboration(shopping_id, collaborator.email, function() {
     changeState("accepted");
    }, function() {
-    alert("error");
    });
   });
   
@@ -49,7 +48,6 @@ iris.ui(function(self) {
    iris.resource(iris.path.service.collaborators).rejectCollaboration(shopping_id, collaborator.email, function() {
     changeState("rejected");
     }, function() {
-     alert("error");
     });
   });
   
@@ -62,7 +60,6 @@ iris.ui(function(self) {
      iris.resource(iris.path.service.collaborators).removeCollaborator(shopping_id, collaborator.email, function() {
       self.setting("destroyUI")(self);
      }, function() {
-      alert("error");
      });
     });
    } else {

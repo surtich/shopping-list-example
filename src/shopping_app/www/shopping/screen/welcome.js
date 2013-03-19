@@ -11,7 +11,6 @@ iris.screen(
     jqXHR.always(function(data, rdo) {
      self.get("loading").hide();
      if (rdo === "error") {
-      modal.get('div_modal').modal('show');
       modal.get('header').text(iris.translate("ERROR"));
       var text = "Error " + data.status;
       if (data.responseText) {
@@ -21,7 +20,10 @@ iris.screen(
         text = " " + data.responseText;
        }
        self.get("text").html(text);
+      } else {
+       self.get("text").html("");
       }
+      modal.get('div_modal').modal('show');
      } else if(data) {
       if(data.redirect) {
        window.location.href = data.redirect;
@@ -83,6 +85,9 @@ iris.screen(
    LOADING: "Cargando...",
    ERROR: "Se ha producido un error",
    OK: "Aceptar",
+   INFO: "Información",
+   REMOVED_LIST: "La lista ha sido borrada por su propietario",
+   REMOVED_COLLABORATOR: "El dueño ya no quiere compartir la lista contigo",
    MENU: {
     WELCOME: "Ejemplo de lista de la compra",
     HOME: "Incio",
@@ -98,6 +103,9 @@ iris.screen(
    LOADING: "Loading...",
    ERROR: "There is an error",
    OK: "Accept",
+   INFO: "Information",
+   REMOVED_LIST: "The list has been removed by its owner",
+   REMOVED_COLLABORATOR: "The owner does not want to share the list with you",
    MENU: {
     WELCOME: "Shopping List Example",
     HOME: "Home",
@@ -126,9 +134,6 @@ iris.screen(
     }
     );
    
-   if ( !document.location.hash ) {                
-    iris.navigate("#/home"); //Default page
-   }
    
    self.get("login").click(function(event) {
     event.preventDefault();
@@ -145,4 +150,16 @@ iris.screen(
    });
    
   };
+  
+  self.awake = function(params) {
+   if (params.msg) {
+    modal.get('header').text(iris.translate("INFO"));
+    self.get("text").html(params.msg);
+    modal.get('div_modal').modal('show');
+    iris.navigate("#/home"); //Default page
+   } else if ( !document.location.hash ) {                
+    iris.navigate("#/home"); //Default page
+   }
+  }
+  
  } , iris.path.screen.welcome.js);

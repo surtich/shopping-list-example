@@ -41,9 +41,14 @@ iris.resource(
   self.userChanged = function(fn) {
    getUser(function(user) {
     if (user !== currentUser) {
+     iris.resource(iris.path.service.io).disconnect();
      currentUser = user;
      iris.notify(iris.evts.user.changed, currentUser);
      iris.navigate("#/home");
+     if (currentUser) {
+      iris.resource(iris.path.service.io).connect(function() {
+       });
+     }
     }
     if (fn) {
      fn();

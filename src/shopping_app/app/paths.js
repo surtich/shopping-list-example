@@ -57,7 +57,7 @@ exports.paths = [
 	{
 		"method" : "POST",
 		"path": "/shopping/add/:shopping_id/product/:product_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/addShoppingProduct")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/addShoppingProduct")]
 	},
 	{
 		"method" : "DELETE",
@@ -67,17 +67,17 @@ exports.paths = [
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/:shopping_id/product/:product_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/removeShoppingProduct")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removeShoppingProduct")]
 	},
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/:shopping_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/removeAllShoppingProducts")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removeAllShoppingProducts")]
 	},
 	{
 		"method" : "DELETE",
 		"path": "/shopping/remove/purchased/:shopping_id",
-		"handler": [require("./path/ensureAuthenticated"), require("./path/canBuy"), require("./path/removePurchasedProducts")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/checkOwner"), require("./path/removePurchasedProducts")]
 	},
 	{
 		"method" : "PUT",
@@ -102,12 +102,12 @@ exports.paths = [
 	{
 		"method" : "PUT",
 		"path": "/shopping/accept/:shopping_id/collaborator/:email",
-		"handler": [require("./path/isShoppingCollaborator"), require("./path/acceptShoppingCollaborator")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/isShoppingCollaborator"), require("./path/acceptShoppingCollaborator")]
 	},
 	{
 		"method" : "PUT",
 		"path": "/shopping/reject/:shopping_id/collaborator/:email",
-		"handler": [require("./path/isShoppingCollaborator"), require("./path/rejectShoppingCollaborator")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/isShoppingCollaborator"), require("./path/rejectShoppingCollaborator")]
 	},
 	{
 		"method" : "DELETE",
@@ -117,6 +117,6 @@ exports.paths = [
 	{
 		"method" : "GET",
 		"path": "/shopping/collaborators/:shopping_id",
-		"handler": [require("./path/shoppingCollaborators")]
+		"handler": [require("./path/ensureAuthenticated"), require("./path/isOwnerOrCollaborator"), require("./path/shoppingCollaborators")]
 	}
 ]

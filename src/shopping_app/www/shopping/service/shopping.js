@@ -9,13 +9,13 @@ iris.resource(
    iris.resource(iris.path.service.auth).getUser(function(user) {
     if (self.shopping._id == "NO_ID" && user) {
      self.saveShopping(function(shopping) {
-      self.shopping._id = shopping._id;
-      self.shopping.email = shopping.email;
-      if (user) {
-       mode = "ONLINE";
-      } else {
-       mode = "OFFLINE";
-      }
+      loadShoppingList(shopping, function() {
+       if (user) {
+        mode = "ONLINE";
+       } else {
+        mode = "OFFLINE";
+       }
+      });
      });
     } else {
      if (user.email != self.shopping.email) {
@@ -48,7 +48,7 @@ iris.resource(
     self.shopping.products[i].purchased = self.shopping.products[i].purchased % 2 === 0? false: true
    }
    success(self.shopping);
-   self.notify(iris.evts.shopping.listLoaded);
+   self.notify(iris.evts.shopping.listLoaded, self.shopping);
   }
   
   // GET /shopping/:shopping_id
@@ -68,7 +68,7 @@ iris.resource(
   // DELETE /shopping/:shopping_id
   self.removeShoppingList = function(shopping_id, success, error) {
    self.del("/shopping/" + shopping_id, function(ret){
-    self.notify(iris.evts.shopping.listRemoved);
+    self.notify(iris.evts.shopping.listRemoved, shopping_id);
     success();
    }, error);
   };
@@ -79,6 +79,7 @@ iris.resource(
     products:self.shopping.products
    }, function(shoppingList){
     success(shoppingList);
+    self.notify(iris.evts.shopping.listSaved, shoppingList);
    });
   }
   
@@ -95,6 +96,7 @@ iris.resource(
        self.shopping.products = shopping.products;
        self.shopping.email = shopping.email;
        success(self.shopping);
+       self.notify(iris.evts.shopping.listSaved, self.shopping);
       }, error);  
      } else {
       self.shopping._id = "NO_ID";
@@ -112,7 +114,7 @@ iris.resource(
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
      self.post("/shopping/add/" + shopping._id + "/product/" + shoppingProduct._id, {}, function(ret){
-      shoppingProduct.order = ret.order;
+      shoppingProduct = ret.product;
       shoppingProduct.purchased = false;
       success(shoppingProduct);
      }, error);
@@ -169,7 +171,7 @@ iris.resource(
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
      self.put("/shopping/purchase/" + shopping._id + "/product/" + product._id + "/purchased/" + purchase, {}, function(ret){
-      success();
+      success(ret);
      }, error); 
     } else {
      success();
@@ -182,7 +184,7 @@ iris.resource(
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
      self.put("/shopping/purchase/" + shopping._id + "/purchased/" + purchase, {}, function(ret){
-      success();
+      success(ret);
      }, error); 
     } else {
      success();
@@ -195,7 +197,7 @@ iris.resource(
    self.getCurrentShopping(function(shopping) {
     if (mode === "ONLINE") {
      self.put("/shopping/purchase/" + shopping._id + "/purchased/invert", {}, function(ret){
-      success();
+      success(ret);
      }, error); 
     } else {
      success();
@@ -265,7 +267,6 @@ iris.resource(
        break;
       }
      }
-     
      iris.notify(iris.evts.shopping.productRemoved, product);
      success();
     });
@@ -299,16 +300,48 @@ iris.resource(
    }
    
    function _purchaseProduct(product, purchase, success, error) {
-    purchaseShoppingProduct(product, purchase, function() {
+    purchaseShoppingProduct(product, purchase, function(ret) {
      product.purchased = purchase;
+     if (ret) {
+      if (ret.email) {
+       product.email = ret.email;
+      }
+      if (ret.last_updated) {
+       product.last_updated = ret.last_updated;
+      }
+     }
      success();
      iris.notify(iris.evts.shopping.productPurchased, product);
     });
    }
    
+   function _replaceProduct(newProduct) {
+    var found = false;
+    var i = 0;
+    while ( !found && i < that.products.length ) {
+     if (that.products[i]._id === newProduct._id) {
+      found = true;
+     } else {
+      i++;
+     }
+    }
+    if (found) {
+     that.products[i] = newProduct;
+    }
+    return found;
+   }
+   
    function _purchaseAllProducts(purchase, success, error) {
-    purchaseAllShoppingProducts(purchase, function() {
+    purchaseAllShoppingProducts(purchase, function(ret) {
      for (var i = 0; i < that.products.length; i++ ) {
+      if (ret && that.products[i].purchased !== purchase) {
+       if (ret.email) {
+        that.products[i].email = ret.email;
+       }
+       if (ret.last_updated) {
+        that.products[i].last_updated = ret.last_updated;
+       }
+      }
       that.products[i].purchased = purchase;
       iris.notify(iris.evts.shopping.productPurchased, that.products[i]);
      }
@@ -317,9 +350,17 @@ iris.resource(
    }
    
    function _invertPurchaseAllProducts(success, error) {
-    invertPurchaseAllShoppingProducts(function() {
+    invertPurchaseAllShoppingProducts(function(ret) {
      for (var i = 0; i < that.products.length; i++ ) {
       that.products[i].purchased = !that.products[i].purchased;
+      if (ret ) {
+       if (ret.email) {
+        that.products[i].email = ret.email;
+       }
+       if (ret.last_updated) {
+        that.products[i].last_updated = ret.last_updated;
+       }
+      }
       iris.notify(iris.evts.shopping.productPurchased, that.products[i]);
      }
      success();
@@ -384,6 +425,7 @@ iris.resource(
    ShoppingList.prototype.hasProduct = function(product_id) {            
     return _getProduct(product_id) !== null;
    };
+   ShoppingList.prototype.replaceProduct = _replaceProduct;
   }
   
  },

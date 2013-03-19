@@ -129,7 +129,8 @@ $(document).ready(
     shopping: "/shopping/service/shopping.js",
     shoppingLists: "/shopping/service/shoppingLists.js",
     auth: "/shopping/service/auth.js",
-    collaborators: "/shopping/service/collaborators.js"
+    collaborators: "/shopping/service/collaborators.js",
+    io: "/shopping/service/socket.io.js"
    }
   };
         
@@ -137,13 +138,17 @@ $(document).ready(
    shopping : {
     listCreated: "shopping_list_created",
     listLoaded: "shopping_list_loaded",
+    listSaved: "shopping_list_saved",
     listRemoved: "shopping_list_removed",
     productAdded: "shopping_product_added",
     productRemoved: "shopping_product_removed",
-    productPurchased: "shopping_product_purchased"
+    productRemoved_io: "shopping_product_removed_io",
+    productPurchased: "shopping_product_purchased",
+    productPurchased_io: "shopping_product_purchased_io"
    },
    user : {
-    changed: "user_changed"
+    changed: "user_changed",
+    collaboratorRemoved: "collaborator_removed"
    }
   };
         

@@ -5,8 +5,9 @@ function handler(req, res){
 
  var shopping_id = req.params.shopping_id;
  var product_id = req.params.product_id;
+ var email = req.user.email;
 
- shoppingconf.addShoppingProduct(shopping_id, product_id, function(err, ret){
+ shoppingconf.addShoppingProduct(shopping_id, product_id, email, function(err, ret){
   if(err || ret === 0){
    res.send(400, {
     err : 'Not Found'

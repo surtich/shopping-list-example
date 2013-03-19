@@ -18,3 +18,4 @@ module.exports.redis	= require("redis");      	// key-value data store
 module.exports.assert	= require("assert");     	// unit test
 module.exports.extend	= require('xtend');			// merge object properties
 module.exports.hero		= require('./hero.js');		// hero library
+module.exports.io		= require('socket.io');		// socket.io library

@@ -5,14 +5,15 @@ function handler(req, res){
 
  var shopping_id = req.params.shopping_id;
  var purchased = req.params.purchased;
+ var email = req.user.email;
 
- shoppingconf.purchaseAllProducts(shopping_id, purchased, function(err, ret){
+ shoppingconf.purchaseAllProducts(shopping_id, purchased, email, function(err, ret){
   if(err || ret === 0){
    res.send(400, {
     err : 'not found'
    });
   } else {
-   res.send(200, {});
+   res.send(200, ret);
   }
  });
 }

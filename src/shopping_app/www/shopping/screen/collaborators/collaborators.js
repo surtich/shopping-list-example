@@ -35,7 +35,6 @@ iris.screen(
     shopping_id = params.shopping;
     owner = params.owner;
     iris.resource(iris.path.service.collaborators).getCollaborators(shopping_id, _inflate, function() {
-     alert("error");
     });
     self.get("add").off("click").click(function() {
      if (self.get("emailAdd").get(0).validity.valid) {
@@ -43,6 +42,8 @@ iris.screen(
        newUI({email: self.get("emailAdd").val(), state: "pending"});
        self.get("emailAdd").val("");
        });
+     } else {
+      self.get("emailAdd").focus().select();
      }
     });
     iris.resource(iris.path.service.auth).getUser(function(user) {

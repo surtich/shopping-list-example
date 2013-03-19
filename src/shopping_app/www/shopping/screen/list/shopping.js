@@ -14,9 +14,11 @@ iris.screen(
     REMOVE_PURCHASED: "Borrar marcados",
     ORDER: "Orden",
     PRODUCT: "Producto",
+    LAST: "Último",
     ACTION: "Acción",
     BUY: "Cambiar estado",
-    REMOVE: "Borrar"
+    REMOVE: "Borrar",
+    ANONYMOUS: "Anónimo"
    }
   });
             
@@ -31,9 +33,11 @@ iris.screen(
     REMOVE_PURCHASED: "Remove purchased",
     ORDER: "Order",
     PRODUCT: "Product",
+    LAST: "Last",
     ACTION: "Action",
     BUY: "Change state",
-    REMOVE: "Remove"
+    REMOVE: "Remove",
+    ANONYMOUS: "Anonymous"
    }
   });
             
@@ -90,32 +94,39 @@ iris.screen(
     self.shopping.removePurchasedProducts(_inflate);
    }
    );
+   
              
   }
         
   function _inflate() {
    self.destroyUIs("shoppingList_products");
    _destroyShoppingTable();
-   _loadShoppingProducts();
-   _createShoppingTable();
+   _loadShoppingProducts(function() {
+    _createShoppingTable();
    _changeVisibilityShoppingTable();
+   });
   }
                         
-  function _loadShoppingProducts() {
+  function _loadShoppingProducts(next) {
    var products = self.shopping.getSortedShoppingProducts();
-   //var products = self.shopping.products;
-   if (products.length > 0) {                
-    $.each(products,
-     function(index, product) {
-      var ui = self.ui("shoppingList_products", iris.path.ui.product_shopping_list_item.js, {
-       "product": product,
-       "removeProduct": function() {
-        _destroyUI.call(this, ui);
-       }
-      });
-     }
-     );
-   }
+   iris.resource(iris.path.service.auth).getUser(function(user) {
+    var canRemove = user.email === self.shopping.email;
+    //var products = self.shopping.products;
+    if (products.length > 0) {                
+     $.each(products,
+      function(index, product) {
+       var ui = self.ui("shoppingList_products", iris.path.ui.product_shopping_list_item.js, {
+        "product": product,
+        "removeProduct": canRemove ? function() {
+         _destroyUI.call(this, ui);
+        } : false
+       });
+      }
+      );
+    }
+    next();
+   });
+   
   }
   
   function _destroyUI(ui) {
@@ -154,7 +165,7 @@ iris.screen(
     "aoColumnDefs": [
     {
      "bSortable": false, 
-     "aTargets": [ 2 ]
+     "aTargets": [ 3 ]
     },
     {
      "sType": "html" , 
@@ -170,8 +181,8 @@ iris.screen(
    var products = self.shopping.products;
    if (products.length > 0) {
     self.get("div_shopping").show();
-    self.get("msg").hide();
     _changeStateButtons();
+    self.get("msg").hide();
    } else {
     self.get("div_shopping").hide();
     self.get("msg").show();
@@ -182,6 +193,12 @@ iris.screen(
    self.get("btn_check_all").toggleClass("disabled", !self.shopping.hasNoPurchasedProducts()).prop("disabled", !self.shopping.hasNoPurchasedProducts());
    self.get("btn_uncheck_all").toggleClass("disabled", !self.shopping.hasPurchasedProducts()).prop("disabled", !self.shopping.hasPurchasedProducts());
    self.get("btn_remove_checked").toggleClass("disabled", !self.shopping.hasPurchasedProducts()).prop("disabled", !self.shopping.hasPurchasedProducts());
+   iris.resource(iris.path.service.auth).getUser(function(user) {
+    if (user.email !== self.shopping.email) {
+     self.get("btn_remove_checked").addClass("disabled").prop("disabled", true); 
+     self.get("btn_remove_all").addClass("disabled").prop("disabled", true); 
+    }
+   });
   }
     
         

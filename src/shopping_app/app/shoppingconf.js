@@ -10,9 +10,21 @@ hero	= commons.hero,
 app		= hero.app,
 express	= commons.express,
 auth = require('./auth.js'),
-RedisStore		= commons.RedisStore;
-
-
+RedisStore		= commons.RedisStore
+evts = {
+ shopping : {
+  listCreated: "shopping_list_created",
+  listLoaded: "shopping_list_loaded",
+  listRemoved: "shopping_list_removed",
+  productAdded: "shopping_product_added",
+  productRemoved: "shopping_product_removed",
+  productPurchased: "shopping_product_purchased"
+ },
+ user : {
+  changed: "user_changed",
+  collaboratorRemoved: "collaborator_removed"
+ }
+};
 module.exports = hero.worker (
  function(self){
   var port = self.config.app.port;
@@ -44,13 +56,6 @@ module.exports = hero.worker (
    app.use(express.methodOverride());
    app.use(passport.initialize());
    app.use(passport.session());
-   /*
-   app.use(function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', app.get('url'));
-    res.header('Access-Control-Allow-Credentials', true);
-    next();
-   });
-   */
    app.use(app.router);
    app.use(express.errorHandler({
     dumpExceptions : true,
@@ -87,6 +92,138 @@ module.exports = hero.worker (
        done(null);
       }
       );
+    },
+    // socket.io
+    function(done){
+     var RedisStore = require('socket.io/lib/stores/redis')
+     , redis  = require('socket.io/node_modules/redis')
+     , pub    = redis.createClient()
+     , sub    = redis.createClient()
+     , client = redis.createClient();
+
+     app.io.set('store', new RedisStore({
+      redisPub : pub, 
+      redisSub : sub, 
+      redisClient : client
+     }));
+
+     app.io.sockets.on('connection', function (socket) {
+      
+      socket.on('login', function(email) {
+       socket.set('email', email, function(err) {
+        if (err) {
+         throw err;
+        }
+        socket.emit('serverMessage', 'Currently logged in as ' + email);
+       });
+      });
+      
+      socket.on(evts.shopping.productPurchased, function (data) {
+       socket.get('list', function(err, list) {
+        if (err) {
+         throw err;
+        }
+        var broadcast = socket.broadcast;
+        if (list) {
+         broadcast.to(list);
+        }
+        broadcast.emit(evts.shopping.productPurchased, data);
+       });
+      });
+      
+      socket.on(evts.shopping.productRemoved, function (data) {
+       socket.get('list', function(err, list) {
+        if (err) {
+         throw err;
+        }
+        var broadcast = socket.broadcast;
+        if (list) {
+         broadcast.to(list);
+        }
+        broadcast.emit(evts.shopping.productRemoved, data);
+       });
+       
+      });
+      
+      socket.on(evts.shopping.listRemoved, function (data) {
+       socket.get('email', function(err, email) {
+        if (! email) {
+         email = socket.id;
+        }
+        socket.get('list', function(err, list) {
+         if (err) {
+          throw err;
+         }
+         var broadcast = socket.broadcast;
+         if (list) {
+          broadcast.to(list);
+         }
+         broadcast.emit(evts.shopping.listRemoved, list);
+        //socket.emit(evts.shopping.listRemoved, list);
+        });
+        
+       });
+      });
+      
+      socket.on(evts.user.collaboratorRemoved, function (email) {
+       socket.get('list', function(err, list) {
+        if (err) {
+         throw err;
+        }
+        var broadcast = socket.broadcast;
+        if (list) {
+         broadcast.to(list);
+        }
+        broadcast.emit(evts.user.collaboratorRemoved, email);
+       //socket.emit(evts.shopping.listRemoved, list);
+       });
+      });
+      
+      socket.on('join', function(list) {
+       socket.get('list', function(err, oldList) {
+        if (err) {
+         throw err;
+        }
+        socket.set('list', list, function(err) {
+         if (err) {
+          throw err;
+         }
+         
+         if (list !== oldList) {
+          socket.join(list);
+          socket.leave(oldList);
+          socket.emit('serverMessage', 'Your joined list is' + list);
+          socket.get('email', function(err, email) {
+           if (! email) {
+            email = socket.id;
+           }
+           socket.broadcast.to(list).emit('serverMessage', 'User ' +
+            email + ' joined to ' + list);
+          });
+         }
+        });
+       });
+      });
+      
+      socket.on('leave', function(list) {
+       socket.get('list', function(err, oldList) {
+        if (err) {
+         throw err;
+        }
+        if (!list || list === oldList) {
+         socket.leave(oldList);
+         socket.set('list', null, function(err) {
+          if (err) {
+           throw err;
+          }
+          socket.emit('serverMessage', 'Your have left the list ' + list);
+         });
+        }
+       });
+      });
+
+     });
+     done(null);
     }
     ], function(err){
      p_cbk(err);
@@ -247,10 +384,13 @@ module.exports = hero.worker (
   function saveShoppingList(products, email, p_cbk){
    
    var order = 0;
+   var date = new Date();
    for (var i = 0; i< products.length; i++) {
     var product = products[i];
     product._id = parseInt(product._id, 10);
     product.purchased = product.purchased === "true" ? 1 : 0;
+    product.email = email;
+    product.last_updated = date;
     if (product.order > order) {
      order++;
     }
@@ -260,7 +400,7 @@ module.exports = hero.worker (
     email: email,
     products: products,
     collaborators: [],
-    last_updated: new Date()
+    last_updated: date
    };
 
    colShoppings.insert(shoppingList, {
@@ -297,7 +437,7 @@ module.exports = hero.worker (
    
   }
   
-  function addShoppingProduct(shopping_id, product_id, p_cbk){
+  function addShoppingProduct(shopping_id, product_id, email, p_cbk){
    var find = {
     _id: ObjectID(String(shopping_id))
    };
@@ -314,24 +454,29 @@ module.exports = hero.worker (
     } else {
      getNextSequence(ObjectID(String(shopping_id)), function(err ,ret) {
       if (!err) {
+       var date = new Date();
+       var p =  {
+        '_id': parseInt(product_id, 10),
+        'order': ret.seq,
+        'name': product.name,
+        'purchased': 0,
+        'email': email,
+        'last_updated': date
+       };
        var set = {
         $addToSet: {
-         'products': {
-          '_id': parseInt(product_id, 10),
-          'order': ret.seq,
-          'name': product.name,
-          'purchased': 0
-         }
+         'products': p
         },
         $set:{
-         'last_updated': new Date()
+         'last_updated': date
         }
        };
        colShoppings.update(find, set, {
         w: 1
        }, function(err, res){
         p_cbk(err, {
-         order: ret.seq
+         order: ret.seq,
+         product: p
         });
        }); 
       }
@@ -397,32 +542,45 @@ module.exports = hero.worker (
    });
   }
   
-  function purchaseProduct(shopping_id, product_id, purchased, p_cbk){
+  function purchaseProduct(shopping_id, product_id, purchased, email, p_cbk){
    
    var find = {
     _id: ObjectID(String(shopping_id)),    
     "products._id": parseInt(product_id, 10)
    };
    
+   var date = new Date();
+   
    var set = {
     $set: {
      "products.$.purchased": purchased === "true" ? 1 : 0,
-     'last_updated': new Date()
+     "products.$.email": email,
+     "products.$.last_updated": date,
+     'last_updated': date
     }
    };
    
    colShoppings.update(find, set, {
     w: 1
    }, function(err, res){
-    p_cbk(err, res);
+    if (res === 0) {
+     p_cbk(err, res);
+    } else {
+     p_cbk(err, {
+      email: email,
+      last_updated: date
+     });
+    }
    });
   }
   
-  function purchaseAllProducts(shopping_id, purchased, p_cbk){
+  function purchaseAllProducts(shopping_id, purchased, email, p_cbk){
    if (purchased === "invert") {
-    invertPurchaseAllProducts(shopping_id, p_cbk);
+    invertPurchaseAllProducts(shopping_id, email, p_cbk);
    } else {
     purchased = (purchased === "true");
+   
+    var date = new Date();
    
     var find = {
      _id: ObjectID(String(shopping_id)),    
@@ -434,7 +592,9 @@ module.exports = hero.worker (
     var set = {
      $set: {
       "products.$.purchased": purchased ? 1 : 0,
-      'last_updated': new Date()
+      "products.$.email": email,
+      "products.$.last_updated": date,
+      'last_updated': date
      }
     };
    
@@ -453,13 +613,19 @@ module.exports = hero.worker (
       });
      },
      function (err) {
-      p_cbk(err, 1);
+      p_cbk(err, {
+       email: email,
+       last_updated: date
+      });
      }
      );
    }
   }
   
-  function invertPurchaseAllProducts(shopping_id, p_cbk){
+  function invertPurchaseAllProducts(shopping_id, email, p_cbk){
+   
+   var date = new Date();
+   
    var find = {
     _id: ObjectID(String(shopping_id))
    };
@@ -474,7 +640,9 @@ module.exports = hero.worker (
      "products.$.purchased":1
     },
     $set: {
-     'last_updated': new Date()
+     'last_updated': date,
+     "products.$.email": email,
+     "products.$.last_updated": date
     }
    };
      
@@ -482,7 +650,10 @@ module.exports = hero.worker (
    colShoppings.find(find, projection).toArray(function(err, items){
     
     async.forEach(items[0].products, invertPurchase, function(err){
-     p_cbk(err);
+     p_cbk(err, {
+      email: email,
+      last_updated: date
+     });
     });
      
     function invertPurchase(product, callback) {
@@ -573,8 +744,20 @@ module.exports = hero.worker (
      },
      query: {
       $or: [
-       {"email": email},
-       {"collaborators": { "$elemMatch": {"email": email, state:{ $ne: "rejected"}}}}
+      {
+       "email": email
+      },
+
+      {
+       "collaborators": {
+        "$elemMatch": {
+         "email": email, 
+         state:{
+          $ne: "rejected"
+         }
+        }
+       }
+      }
       ]
      },
      scope: {
@@ -612,7 +795,9 @@ module.exports = hero.worker (
    };
    
    
-   colShoppings.findOne(find, {fields: projection}, function(err, res){
+   colShoppings.findOne(find, {
+    fields: projection
+   }, function(err, res){
     p_cbk(err, res);
    });
    
@@ -705,7 +890,12 @@ module.exports = hero.worker (
   function isAcceptedCollaborator(shopping_id, email, p_cbk){
    var find = {
     _id: ObjectID(String(shopping_id)),    
-    "collaborators": { "$elemMatch": {"email": email, state: "accepted"}}
+    "collaborators": {
+     "$elemMatch": {
+      "email": email, 
+      state: "accepted"
+     }
+    }
    };
    
    colShoppings.findOne(find, function(err, item){
@@ -766,5 +956,7 @@ module.exports = hero.worker (
   self.getShoppingCollaborators = getShoppingCollaborators;
   self.isCollaborator = isCollaborator;
   self.isAcceptedCollaborator = isAcceptedCollaborator;
+  
+  
  }
  );
