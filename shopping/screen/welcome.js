@@ -79,8 +79,8 @@ iris.screen(
                 );
             
             
-            if ( !document.location.hash ) {                
+            //if ( !document.location.hash ) {                
                 iris.navigate("#/home"); //Default page
-            }
+            //}
         };
     } , iris.path.screen.welcome.js);
